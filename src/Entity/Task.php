@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Task
 {
     #[ORM\Id]
@@ -107,5 +108,13 @@ class Task
         $this->created_at = $created_at;
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function prePersistCallback()
+    {
+        $this->setCreatedAt(new \DateTimeImmutable());
+        $this->setIsDone(false);
+        $this->setIsDeleted(false);
     }
 }
