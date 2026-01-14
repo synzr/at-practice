@@ -27,19 +27,15 @@ final class TaskController extends AbstractController
 
             $entityManager->persist($task);
             $entityManager->flush();
+
+            return $this->redirectToRoute('app_task');
         }
 
         $tasks = $entityManager->getRepository(Task::class)->findAllSorted();
 
-        // SEE: https://github.com/symfony/symfony/discussions/53199
-        // TODO: it does get out of debug menu for some reasons
-        $response = new Response(
-            null, 
-            $form->isSubmitted() ? Response::HTTP_SEE_OTHER : 200
-        );
         return $this->render('task/index.html.twig', [
             "form" => $form,
             "tasks" => $tasks,
-        ], $response);
+        ]);
     }
 }
