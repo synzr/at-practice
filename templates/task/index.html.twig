@@ -10,10 +10,33 @@
         </section>
 
         {# Панель действий #}
-        <section class="container-fluid d-flex flex-row-reverse">
+        <section class="container-fluid d-flex flex-row-reverse gap-1">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
                 Добавить задачу
             </button>
+
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Сортировка
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="{{ path('task_index') }}">
+                            Сначала новые
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('task_index', {sort: 'created_at', order: 'asc'}) }}">
+                            Сначала старые
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('task_index', {sort: 'deadline', order: 'asc'}) }}">
+                            Сначала близкие к дедлайну
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </section>
 
         {# Список задач #}

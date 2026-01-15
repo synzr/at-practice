@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\Task;
-use BcMath\Number;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,6 +15,26 @@ class TaskRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Task::class);
     }
+
+    public function findSorted(string $sort, string $order): array
+    {
+        $allowedFields = ['created_at', 'name', 'deadline'];
+        $allowedOrders = ['ASC', 'DESC'];
+
+        if (!in_array($sort, $allowedFields, true)) {
+            $sort = 'created_at';
+        }
+
+        if (!in_array($order, $allowedOrders, true)) {
+            $order = 'DESC';
+        }
+
+        return $this->createQueryBuilder('t')
+            ->orderBy('t.' . $sort, $order)
+            ->getQuery()
+            ->getResult();
+    }
+
 
 //    /**
 //     * @return Task[] Returns an array of Task objects

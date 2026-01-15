@@ -35,10 +35,17 @@ final class TaskController extends AbstractController
      * Главная страница
      */
     #[Route('/', name: 'task_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $form = $this->createForm(TaskType::class);
-        $tasks = $this->taskRepository->findBy([], ['created_at' => 'DESC']);
+
+        // NOTE: получаем параметры сортировки
+        $sort = $request->query->get('sort', 'created_at');
+        $order = strtoupper($request->query->get('order', 'DESC'));
+
+        // NOTE: получаем задачи по параметрам
+        $tasks = $this->taskRepository->findSorted($sort, $order);
+
         return $this->render('task/index.html.twig', [
             'form' => $form->createView(),
             'tasks' => $tasks,
