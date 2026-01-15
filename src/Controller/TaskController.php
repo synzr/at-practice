@@ -5,10 +5,11 @@ namespace App\Controller;
 use App\Entity\Task;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\TaskService;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 final class TaskController extends AbstractController
 {
@@ -17,8 +18,17 @@ final class TaskController extends AbstractController
      */
     private TaskRepository $taskRepository;
 
-    public function __construct(TaskRepository $taskRepository) {
+    /**
+     * Сервис задач
+     */
+    private TaskService $taskService;
+
+    public function __construct(
+        TaskRepository $taskRepository,
+        TaskService $taskService
+    ) {
         $this->taskRepository = $taskRepository;
+        $this->taskService = $taskService;
     }
 
     /**
@@ -47,7 +57,7 @@ final class TaskController extends AbstractController
         // NOTE: сохраняем задачу, если форма заполнена и валидна
         if ($form->isSubmitted() && $form->isValid()) {
             $task = $form->getData();
-            $this->taskRepository->create($task);
+            $this->taskService->createTask($task);
 
             return $this->json([
                 'success' => true,

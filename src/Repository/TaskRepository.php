@@ -17,18 +17,6 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
-    /**
-     * Сохраняет задачу в базе данных
-     * @param Task $task Задача
-     * @return int Идентификатор задачи
-     */
-    public function create(Task $task): int
-    {
-        $this->getEntityManager()->persist($task);
-        $this->getEntityManager()->flush();
-        return $task->getId(); // NOTE: индентификатор задачи доступен после сохранения
-    }
-
 //    /**
 //     * @return Task[] Returns an array of Task objects
 //     */
