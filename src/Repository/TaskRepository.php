@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Task;
+use BcMath\Number;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,14 +18,15 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Task[] Returns an sorted array of Task objects
+     * Сохраняет задачу в базе данных
+     * @param Task $task Задача
+     * @return int Идентификатор задачи
      */
-    public function findAllSorted()
+    public function create(Task $task): int
     {
-        return $this->createQueryBuilder('t')
-            ->orderBy('t.created_at', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $this->getEntityManager()->persist($task);
+        $this->getEntityManager()->flush();
+        return $task->getId(); // NOTE: индентификатор задачи доступен после сохранения
     }
 
 //    /**

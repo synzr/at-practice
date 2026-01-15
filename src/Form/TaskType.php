@@ -15,9 +15,7 @@ class TaskType extends AbstractType
         $builder
             ->add('name')
             ->add('description')
-            ->add('deadline')
-            ->add('save', SubmitType::class)
-        ;
+            ->add('deadline');
     }
 
     public function configureOptions(OptionsResolver $resolver): void

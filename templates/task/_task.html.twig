@@ -1,0 +1,17 @@
+<div class="card" style="width: 18rem;">
+    <div class="card-body">
+        <h5 class="card-title">{{ task.name }}</h5>
+
+        {% if task.description %}
+        <p class="card-text">{{ task.description }}</p>
+        {% endif %}
+    </div>
+
+    <div class="card-footer">
+        {% if task.deadline %}
+        <small class="text-muted">До {{ task.deadline|date('d.m.Y') }}</small>
+        {% endif %}
+
+        <a href="#" class="btn btn-primary">...</a>
+    </div>
+</div>

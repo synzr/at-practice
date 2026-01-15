@@ -3,19 +3,29 @@
 {% block title %}Список задач{% endblock %}
 
 {% block body %}
-{{ form(form) }}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
+    Добавить задачу
+</button>
 
-{% if tasks is not empty %}
-<ul>
+{# Список задач #}
+<section id="task-list">
     {% for task in tasks %}
-    <li>
-        {{ task.name }}
-        {% if task.description %}
-        <br />
-        <p>{{ task.description }}</p>
-        {% endif %}
-    </li>
+    {% include 'task/_task.html.twig' with { task: task } %}
     {% endfor %}
-</ul>
-{% endif %}
+</section>
+
+{# Модал создания задачи #}
+<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">Добавить задачу</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% include 'task/_form.html.twig' %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
