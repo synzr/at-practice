@@ -22,9 +22,20 @@
                 <h5 class="modal-title" id="taskModalLabel">Добавить задачу</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                {% include 'task/_form.html.twig' %}
-            </div>
+
+            {{ form_start(form, {
+                action: path('task_create'),
+                attr: { id: 'task-form' },
+            }) }}
+                <div class="modal-body">
+                    {{ form_row(form.name) }}
+                    {{ form_row(form.description) }}
+                    {{ form_row(form.deadline) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            {{ form_end(form) }}
         </div>
     </div>
 </div>
