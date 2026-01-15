@@ -1,6 +1,6 @@
 import 'bootstrap';
 import './stimulus_bootstrap.js';
-import './scripts/task_modal.js';
+import './scripts/index_page.js';
 /*
  * Welcome to your app's main JavaScript file!
  *

@@ -47,7 +47,7 @@ final class TaskController extends AbstractController
         // NOTE: сохраняем задачу, если форма заполнена и валидна
         if ($form->isSubmitted() && $form->isValid()) {
             $task = $form->getData();
-            $id = $this->taskRepository->create($task);
+            $this->taskRepository->create($task);
 
             return $this->json([
                 'success' => true,
