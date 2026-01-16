@@ -28,6 +28,7 @@ class TaskService
         $this->taskRepository = $taskRepository;
     }
 
+    // #region Create/Update
     /**
      * Создать задачу в базе данных.
      *
@@ -37,15 +38,7 @@ class TaskService
      */
     public function createTask(TaskDto $taskDto): Task
     {
-        $task = new Task();
-        $task->setName($taskDto->name);
-        $task->setDescription($taskDto->description);
-        $task->setDeadline($taskDto->deadline);
-
-        $this->entityManager->persist($task);
-        $this->entityManager->flush();
-
-        return $task;
+        return $this->saveTask(null, $taskDto);
     }
 
     /**
@@ -60,14 +53,29 @@ class TaskService
     public function updateTask(int $taskId, TaskDto $taskDto): void
     {
         $task = $this->taskRepository->find($taskId);
-
         if (!$task) {
             throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
-
-        // Проверяем, что задача не удалена
         if ($task->isDeleted()) {
             throw new \InvalidArgumentException('Cannot update deleted task');
+        }
+
+        $this->saveTask($task, $taskDto);
+    }
+
+    /**
+     * Сохранить задачу в базе данных.
+     *
+     * @param Task|null $task     Задача для сохранения
+     * @param TaskDto   $taskDto  Данные задачи
+     *
+     * @return Task Сохраненная задача
+     */
+    private function saveTask(?Task $task, TaskDto $taskDto): Task
+    {
+        if (null === $task) {
+            $task = new Task();
+            $this->entityManager->persist($task);
         }
 
         $task->setName($taskDto->name);
@@ -75,7 +83,10 @@ class TaskService
         $task->setDeadline($taskDto->deadline);
 
         $this->entityManager->flush();
+
+        return $task;
     }
+    // #endregion
 
     /**
      * Переключить статус задачи на противоположный.
@@ -90,12 +101,9 @@ class TaskService
     public function flipDone(int $taskId): Task
     {
         $task = $this->taskRepository->find($taskId);
-
         if (!$task) {
             throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
-
-        // Проверяем, что задача не удалена
         if ($task->isDeleted()) {
             throw new \InvalidArgumentException('Cannot flip done status for deleted task');
         }
@@ -116,7 +124,6 @@ class TaskService
     public function fullDeleteTask(int $taskId): void
     {
         $task = $this->taskRepository->find($taskId);
-
         if (!$task) {
             throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
@@ -137,12 +144,9 @@ class TaskService
     public function deleteOrRestoreTask(int $taskId, bool $deleteFlag): void
     {
         $task = $this->taskRepository->find($taskId);
-
         if (!$task) {
             throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
-
-        // Проверяем, что задача не уже в нужном состоянии
         if ($task->isDeleted() === $deleteFlag) {
             throw new \InvalidArgumentException($deleteFlag ? 'Task is already deleted' : 'Task is not deleted');
         }
