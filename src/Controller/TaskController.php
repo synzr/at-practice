@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 
 final class TaskController extends AbstractController
@@ -61,7 +62,7 @@ final class TaskController extends AbstractController
      * Обработчик формы создания задачи
      */
     #[Route('/', name: 'task_create', methods: ['POST'])]
-    public function create(Request $request)
+    public function create(Request $request): JsonResponse
     {
         $form = $this->createForm(TaskType::class, new TaskDto());
         $form->handleRequest($request);
@@ -81,7 +82,7 @@ final class TaskController extends AbstractController
     }
 
     #[Route('/{id}', name: 'task_update', methods: ['POST'])]
-    public function update(Request $request, int $id)
+    public function update(Request $request, int $id): JsonResponse
     {
         $form = $this->createForm(TaskType::class, new TaskDto());
         $form->handleRequest($request);
@@ -126,7 +127,7 @@ final class TaskController extends AbstractController
      * Удалить задачу безвозвратно
      */
     #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
-    public function delete(int $id)
+    public function delete(int $id): JsonResponse
     {
         try {
             $this->taskService->fullDeleteTask($id);
@@ -149,7 +150,10 @@ final class TaskController extends AbstractController
      * Удалить (по флагу) или восстановить задачу
      */
     #[Route('/{id}/delete-or-restore', name: 'task_delete_or_restore', methods: ['POST'])]
-    public function deleteOrRestore(#[MapRequestPayload] DeleteOrRestoreDto $dto, int $id)
+    public function deleteOrRestore(
+        #[MapRequestPayload] DeleteOrRestoreDto $dto,
+        int $id
+    ): JsonResponse
     {
         try {
             $this->taskService->deleteOrRestoreTask($id, $dto->flag);
@@ -186,7 +190,7 @@ final class TaskController extends AbstractController
      * Пометить задачу как выполненную или наобратно
      */
     #[Route('/{id}/done', name: 'task_done', methods: ['POST'])]
-    public function done(int $id)
+    public function done(int $id): JsonResponse
     {
         try {
             $task = $this->taskService->flipDone($id);

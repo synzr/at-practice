@@ -111,7 +111,7 @@ class Task
     }
 
     #[ORM\PrePersist]
-    public function prePersistCallback()
+    public function prePersistCallback(): void
     {
         $this->setCreatedAt(new \DateTimeImmutable());
         $this->setIsDone(false);

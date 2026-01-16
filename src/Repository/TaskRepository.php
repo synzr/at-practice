@@ -16,6 +16,9 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
+    /**
+     * @return Task[] Returns an array of Task objects
+     */
     public function findSorted(string $sort, string $order): array
     {
         $allowedFields = ['created_at', 'name', 'deadline'];
