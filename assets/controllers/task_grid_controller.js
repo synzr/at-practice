@@ -56,7 +56,9 @@ export default class extends Controller {
     const { html, id } = event.detail;
 
     // NOTE: находим задачу в DOM
-    const item = this.element.querySelector(`[data-id="${id}"]`);
+    const item = this.element.querySelector(
+      `[data-task-item-id-value="${id}"]`
+    );
     if (!item) {
       console.error("onTaskEdited(): Changed task not found in DOM");
       return;
@@ -76,7 +78,9 @@ export default class extends Controller {
     const { id } = event.detail;
 
     // NOTE: находим задачу в DOM
-    const item = this.element.querySelector(`[data-id="${id}"]`);
+    const item = this.element.querySelector(
+      `[data-task-item-id-value="${id}"]`
+    );
     if (!item) {
       console.error("onTaskDeleted(): Deleted task not found in DOM");
       return;

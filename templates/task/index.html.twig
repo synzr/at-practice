@@ -4,8 +4,9 @@
 
 {% block body %}
 <div
-    data-controller="task-add"
-    data-task-add-create-url-value="{{ path('task_create') }}"
+    data-controller="task-modal"
+    data-task-modal-create-url-value="{{ path('task_create') }}"
+    data-task-modal-edit-url-value="{{ path('task_update', {id: 0}) }}"
 >
     <main class="container-sm">
         <section class="container-fluid">
@@ -14,7 +15,10 @@
 
         {# Панель действий #}
         <section class="container-fluid d-flex flex-row-reverse gap-1">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
+            <button
+                class="btn btn-primary"
+                data-action="click->task-modal#openCreateModal"
+            >
                 Добавить задачу
             </button>
 
@@ -46,7 +50,7 @@
         <section
             class="container-fluid row"
             data-controller="task-grid"
-            data-task-add-target="grid"
+            data-task-modal-target="grid"
         >
             {% for task in tasks %}
                 {% include 'task/_task.html.twig' with { task: task } %}
@@ -54,12 +58,12 @@
         </section>
     </main>
 
-    {# Модал создания задачи #}
+    {# Модал создания/редактирования задачи #}
     <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="taskModalLabel">Добавить задачу</h5>
+                    <h5 class="modal-title" id="taskModalLabel" data-task-modal-target="title">Добавить задачу</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
@@ -67,8 +71,8 @@
                     action: path('task_create'),
                     attr: {
                         id: 'task-form',
-                        'data-task-add-target': 'form',
-                        'data-action': 'submit->task-add#submitForm'
+                        'data-task-modal-target': 'form',
+                        'data-action': 'submit->task#submitForm'
                     },
                 }) }}
                     <div class="modal-body">
@@ -77,7 +81,7 @@
                         {{ form_row(form.deadline) }}
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Создать</button>
+                        <button type="submit" class="btn btn-primary" data-task-modal-target="submit">Создать</button>
                     </div>
                 {{ form_end(form) }}
             </div>

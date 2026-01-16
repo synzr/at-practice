@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Dto\TaskDto;
 use App\Entity\Task;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use App\Service\TaskService;
+use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,8 +33,9 @@ final class TaskController extends AbstractController
         $this->taskService = $taskService;
     }
 
+    // #region CRUD
     /**
-     * Главная страница
+     * Главная страница (Read)
      */
     #[Route('/', name: 'task_index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -55,23 +58,104 @@ final class TaskController extends AbstractController
     /**
      * Обработчик формы создания задачи
      */
-    #[Route('/create', name: 'task_create', methods: ['POST'])]
+    #[Route('/', name: 'task_create', methods: ['POST'])]
     public function create(Request $request)
     {
-        $form = $this->createForm(TaskType::class, new Task());
+        $form = $this->createForm(TaskType::class, new TaskDto());
         $form->handleRequest($request);
 
-        // NOTE: сохраняем задачу, если форма заполнена и валидна
-        if ($form->isSubmitted() && $form->isValid()) {
-            $task = $form->getData();
-            $this->taskService->createTask($task);
+        // NOTE: возвращаем ошибку, если форма не заполнена или не валидна
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            return $this->json(['success' => false], 400 /* Bad Request */);
+        }
+
+        // NOTE: создаем новую задачу через сервис
+        $task = $this->taskService->createTask($form->getData());
+
+        return $this->json([
+            'success' => true,
+            'task' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+        ], 201 /* Created */);
+    }
+
+    #[Route('/{id}', name: 'task_update', methods: ['POST'])]
+    public function update(Request $request, int $id)
+    {
+        $form = $this->createForm(TaskType::class, new TaskDto());
+        $form->handleRequest($request);
+
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            return $this->json(['success' => false], 400 /* Bad Request */);
+        }
+
+        try {
+            // NOTE: обновляем задачу через сервис
+            $this->taskService->updateTask($id, $form->getData());
+
+            // NOTE: получаем обновленную задачу из базы данных
+            $task = $this->taskRepository->find($id);
 
             return $this->json([
                 'success' => true,
-                'task' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-            ], 201 /* Created */);
+                'task' => [
+                    'id' => $task->getId(),
+                    'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+                ],
+            ], 202 /* Accepted */);
+        } catch (EntityNotFoundException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Task not found'
+            ], 404 /* Not Found */);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Failed to update task'
+            ], 500 /* Internal Server Error */);
         }
+    }
 
-        return $this->json(['success' => false], 400 /* Bad Request */);
+    /**
+     * Удалить задачу безвозвратно
+     */
+    #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
+    public function delete(Task $task)
+    {
+        return $this->json(['success' => false], 501 /* Not Implemented */);
+    }
+    // #endregion
+
+    /**
+     * Удалить (по флагу) или восстановить задачу
+     */
+    #[Route('/{id}/delete-or-restore', name: 'task_delete_or_restore', methods: ['POST'])]
+    public function deleteOrRestore(int $id)
+    {
+        return $this->json(['success' => false], 501 /* Not Implemented */);
+    }
+
+    /**
+     * Пометить задачу как выполненную или наобратно
+     */
+    #[Route('/{id}/done', name: 'task_done', methods: ['POST'])]
+    public function done(int $id)
+    {
+        try {
+            $task = $this->taskService->flipDone($id);
+            return $this->json([
+                'success' => true,
+                'task' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+            ], 200 /* OK */);
+        } catch (EntityNotFoundException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Task not found'
+            ], 404 /* Not Found */);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Failed to update task'
+            ], 500 /* Internal Server Error */);
+        }
     }
 }

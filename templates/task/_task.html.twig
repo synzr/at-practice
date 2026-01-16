@@ -1,7 +1,26 @@
-<div class="task-item" data-id="{{ task.id }}">
+<div
+    class="task-item"
+    data-controller="task-item"
+    data-task-item-id-value="{{ task.id }}"
+    data-task-item-name-value="{{ task.name }}"
+    {% if task.description %}
+    data-task-item-description-value="{{ task.description }}"
+    {% endif %}
+    {% if task.deadline %}
+    data-task-item-deadline-value="{{ task.deadline|date('c') }}"
+    {% endif %}
+>
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">{{ task.name }}</h5>
+            <h5 class="card-title">
+                {{ task.name }}
+
+                {% if task.isDone %}
+                <span class="badge bg-success">Выполнено</span>
+                {% else %}
+                <span class="badge bg-danger">Не выполнено</span>
+                {% endif %}
+            </h5>
 
             {% if task.description %}
             <p class="card-text">{{ task.description }}</p>
@@ -15,19 +34,40 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li>
-                        <a class="dropdown-item" href="#">
+                        {% if task.isDone %}
+                        <button class="dropdown-item" role="button" data-action="click->task-item#done">
+                            Отметить как невыполненное
+                        </button>
+                        {% else %}
+                        <button class="dropdown-item" role="button" data-action="click->task-item#done">
                             Отметить как выполненное
-                        </a>
+                        </button>
+                        {% endif %}
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <button class="dropdown-item" role="button" data-action="click->task-item#edit">
                             Редактировать
-                        </a>
+                        </button>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    {% if task.isDeleted %}
+                    <li>
+                        <button class="dropdown-item" role="button" data-action="click->task-item#restore">
+                            Восстановить
+                        </button>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <button class="dropdown-item" role="button" data-action="click->task-item#delete">
+                            Удалить
+                        </button>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#">
-                            Удалить
-                        </a>
+                        <button class="dropdown-item" role="button" data-action="click->task-item#fullDelete">
+                            Удалить бесвозвратно
+                        </button>
                     </li>
                 </ul>
             </div>
