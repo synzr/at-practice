@@ -2,35 +2,34 @@
 
 namespace App\Controller;
 
-use App\Dto\TaskDto;
 use App\Dto\DeleteOrRestoreDto;
-use App\Entity\Task;
+use App\Dto\TaskDto;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use App\Service\TaskService;
 use Doctrine\ORM\EntityNotFoundException;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Routing\Attribute\Route;
 
 final class TaskController extends AbstractController
 {
     /**
-     * Репозиторий задач
+     * Репозиторий задач.
      */
     private TaskRepository $taskRepository;
 
     /**
-     * Сервис задач
+     * Сервис задач.
      */
     private TaskService $taskService;
 
     public function __construct(
         TaskRepository $taskRepository,
-        TaskService $taskService
+        TaskService $taskService,
     ) {
         $this->taskRepository = $taskRepository;
         $this->taskService = $taskService;
@@ -38,7 +37,7 @@ final class TaskController extends AbstractController
 
     // #region CRUD
     /**
-     * Главная страница (Read)
+     * Главная страница.
      */
     #[Route('/', name: 'task_index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -59,7 +58,7 @@ final class TaskController extends AbstractController
     }
 
     /**
-     * Обработчик формы создания задачи
+     * Обработчик формы создания задачи.
      */
     #[Route('/', name: 'task_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
@@ -108,53 +107,53 @@ final class TaskController extends AbstractController
         } catch (EntityNotFoundException $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Task not found'
+                'message' => 'Task not found',
             ], 404 /* Not Found */);
         } catch (\InvalidArgumentException $e) {
             return $this->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400 /* Bad Request */);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Failed to update task'
+                'message' => 'Failed to update task',
             ], 500 /* Internal Server Error */);
         }
     }
 
     /**
-     * Удалить задачу безвозвратно
+     * Удалить задачу безвозвратно.
      */
     #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         try {
             $this->taskService->fullDeleteTask($id);
+
             return $this->json(['success' => true], 200 /* OK */);
         } catch (EntityNotFoundException $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Task not found'
+                'message' => 'Task not found',
             ], 404 /* Not Found */);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Failed to delete task'
+                'message' => 'Failed to delete task',
             ], 500 /* Internal Server Error */);
         }
     }
     // #endregion
 
     /**
-     * Удалить (по флагу) или восстановить задачу
+     * Удалить (по флагу) или восстановить задачу.
      */
     #[Route('/{id}/delete-or-restore', name: 'task_delete_or_restore', methods: ['POST'])]
     public function deleteOrRestore(
         #[MapRequestPayload] DeleteOrRestoreDto $dto,
-        int $id
-    ): JsonResponse
-    {
+        int $id,
+    ): JsonResponse {
         try {
             $this->taskService->deleteOrRestoreTask($id, $dto->flag);
 
@@ -171,29 +170,30 @@ final class TaskController extends AbstractController
         } catch (EntityNotFoundException $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Task not found'
+                'message' => 'Task not found',
             ], 404 /* Not Found */);
         } catch (\InvalidArgumentException $e) {
             return $this->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400 /* Bad Request */);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Failed to update task'
+                'message' => 'Failed to update task',
             ], 500 /* Internal Server Error */);
         }
     }
 
     /**
-     * Пометить задачу как выполненную или наобратно
+     * Пометить задачу как выполненную или наобратно.
      */
     #[Route('/{id}/done', name: 'task_done', methods: ['POST'])]
     public function done(int $id): JsonResponse
     {
         try {
             $task = $this->taskService->flipDone($id);
+
             return $this->json([
                 'success' => true,
                 'task' => [
@@ -204,17 +204,17 @@ final class TaskController extends AbstractController
         } catch (EntityNotFoundException $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Task not found'
+                'message' => 'Task not found',
             ], 404 /* Not Found */);
         } catch (\InvalidArgumentException $e) {
             return $this->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400 /* Bad Request */);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
-                'message' => 'Failed to update task'
+                'message' => 'Failed to update task',
             ], 500 /* Internal Server Error */);
         }
     }

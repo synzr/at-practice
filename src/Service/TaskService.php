@@ -11,27 +11,28 @@ use Doctrine\ORM\EntityNotFoundException;
 class TaskService
 {
     /**
-     * Менеджер сущностей
+     * Менеджер сущностей.
      */
     private EntityManagerInterface $entityManager;
 
     /**
-     * Репозиторий задач
+     * Репозиторий задач.
      */
     private TaskRepository $taskRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        TaskRepository $taskRepository
-    )
-    {
+        TaskRepository $taskRepository,
+    ) {
         $this->entityManager = $entityManager;
         $this->taskRepository = $taskRepository;
     }
 
     /**
      * Создать задачу в базе данных.
+     *
      * @param TaskDto $taskDto Данные задачи
+     *
      * @return Task Созданная задача
      */
     public function createTask(TaskDto $taskDto): Task
@@ -49,9 +50,11 @@ class TaskService
 
     /**
      * Обновить задачу в базе данных.
-     * @param int $taskId Идентификатор задачи
+     *
+     * @param int     $taskId  Идентификатор задачи
      * @param TaskDto $taskDto Данные для обновления задачи
-     * @throws EntityNotFoundException Если задача не найдена
+     *
+     * @throws EntityNotFoundException   Если задача не найдена
      * @throws \InvalidArgumentException Если задача удалена
      */
     public function updateTask(int $taskId, TaskDto $taskDto): void
@@ -59,7 +62,7 @@ class TaskService
         $task = $this->taskRepository->find($taskId);
 
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
 
         // Проверяем, что задача не удалена
@@ -75,10 +78,13 @@ class TaskService
     }
 
     /**
-     * Переключить статус задачи на противоположный
+     * Переключить статус задачи на противоположный.
+     *
      * @param int $taskId Идентификатор задачи
+     *
      * @return Task Обновленная задача
-     * @throws EntityNotFoundException Если задача не найдена
+     *
+     * @throws EntityNotFoundException   Если задача не найдена
      * @throws \InvalidArgumentException Если задача удалена
      */
     public function flipDone(int $taskId): Task
@@ -86,7 +92,7 @@ class TaskService
         $task = $this->taskRepository->find($taskId);
 
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
 
         // Проверяем, что задача не удалена
@@ -101,8 +107,10 @@ class TaskService
     }
 
     /**
-     * Безвозвратно удалить задачу (hard delete)
+     * Безвозвратно удалить задачу (hard delete).
+     *
      * @param int $taskId Идентификатор задачи
+     *
      * @throws EntityNotFoundException Если задача не найдена
      */
     public function fullDeleteTask(int $taskId): void
@@ -110,7 +118,7 @@ class TaskService
         $task = $this->taskRepository->find($taskId);
 
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
 
         $this->entityManager->remove($task);
@@ -118,10 +126,12 @@ class TaskService
     }
 
     /**
-     * Удалить или восстановить задачу в зависимости от флага
-     * @param int $taskId Идентификатор задачи
+     * Удалить или восстановить задачу в зависимости от флага.
+     *
+     * @param int  $taskId     Идентификатор задачи
      * @param bool $deleteFlag Флаг удаления (true для удаления, false для восстановления)
-     * @throws EntityNotFoundException Если задача не найдена
+     *
+     * @throws EntityNotFoundException   Если задача не найдена
      * @throws \InvalidArgumentException Если задача уже в нужном состоянии
      */
     public function deleteOrRestoreTask(int $taskId, bool $deleteFlag): void
@@ -129,16 +139,12 @@ class TaskService
         $task = $this->taskRepository->find($taskId);
 
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
         }
 
         // Проверяем, что задача не уже в нужном состоянии
         if ($task->isDeleted() === $deleteFlag) {
-            throw new \InvalidArgumentException(
-                $deleteFlag
-                    ? 'Task is already deleted'
-                    : 'Task is not deleted'
-            );
+            throw new \InvalidArgumentException($deleteFlag ? 'Task is already deleted' : 'Task is not deleted');
         }
 
         $task->setIsDeleted($deleteFlag);
