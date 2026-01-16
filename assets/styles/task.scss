@@ -1,0 +1,14 @@
+.task-item {
+    margin-bottom: 1rem;
+    width: calc(33.333% - 16px);
+    box-sizing: border-box;
+}
+
+/* Адаптивность */
+@media (max-width: 992px) {
+    .task-item { width: calc(50% - 16px); }
+}
+
+@media (max-width: 576px) {
+    .task-item { width: 100%; }
+}
