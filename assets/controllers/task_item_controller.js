@@ -18,7 +18,8 @@ export default class extends Controller {
       .then((response) => response.json())
       .then((data) => {
         if (!data.success) {
-          alert("Ошибка выполнения задачи");
+          alert("Ошибка выполнения задачи: " + data.message);
+          return;
         }
 
         this.dispatch("done", { detail: data.task });
@@ -46,11 +47,11 @@ export default class extends Controller {
       .then((response) => response.json())
       .then((data) => {
         if (!data.success) {
-          alert("Ошибка удаления задачи");
+          alert("Ошибка удаления задачи: " + data.message);
           return;
         }
 
-        this.dispatch("delete", { detail: { id: this.idValue } });
+        this.dispatch("full-delete", { detail: { id: this.idValue } });
       });
   }
 
@@ -70,11 +71,11 @@ export default class extends Controller {
       .then((response) => response.json())
       .then((data) => {
         if (!data.success) {
-          alert("Ошибка удаления задачи");
+          alert("Ошибка удаления задачи: " + data.message);
           return;
         }
 
-        this.dispatch(flag ? "delete" : "restore", {
+        this.dispatch(flag ? "soft-delete" : "restore", {
           detail: data.task ?? { id: this.idValue },
         });
       });

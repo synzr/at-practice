@@ -52,6 +52,7 @@ class TaskService
      * @param int $taskId Идентификатор задачи
      * @param TaskDto $taskDto Данные для обновления задачи
      * @throws EntityNotFoundException Если задача не найдена
+     * @throws \InvalidArgumentException Если задача удалена
      */
     public function updateTask(int $taskId, TaskDto $taskDto): void
     {
@@ -59,6 +60,11 @@ class TaskService
 
         if (!$task) {
             throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+        }
+
+        // Проверяем, что задача не удалена
+        if ($task->isDeleted()) {
+            throw new \InvalidArgumentException('Cannot update deleted task');
         }
 
         $task->setName($taskDto->name);
@@ -73,6 +79,7 @@ class TaskService
      * @param int $taskId Идентификатор задачи
      * @return Task Обновленная задача
      * @throws EntityNotFoundException Если задача не найдена
+     * @throws \InvalidArgumentException Если задача удалена
      */
     public function flipDone(int $taskId): Task
     {
@@ -80,6 +87,11 @@ class TaskService
 
         if (!$task) {
             throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+        }
+
+        // Проверяем, что задача не удалена
+        if ($task->isDeleted()) {
+            throw new \InvalidArgumentException('Cannot flip done status for deleted task');
         }
 
         $task->setIsDone(!$task->isDone());
@@ -110,6 +122,7 @@ class TaskService
      * @param int $taskId Идентификатор задачи
      * @param bool $deleteFlag Флаг удаления (true для удаления, false для восстановления)
      * @throws EntityNotFoundException Если задача не найдена
+     * @throws \InvalidArgumentException Если задача уже в нужном состоянии
      */
     public function deleteOrRestoreTask(int $taskId, bool $deleteFlag): void
     {
@@ -117,6 +130,15 @@ class TaskService
 
         if (!$task) {
             throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+        }
+
+        // Проверяем, что задача не уже в нужном состоянии
+        if ($task->isDeleted() === $deleteFlag) {
+            throw new \InvalidArgumentException(
+                $deleteFlag
+                    ? 'Task is already deleted'
+                    : 'Task is not deleted'
+            );
         }
 
         $task->setIsDeleted($deleteFlag);

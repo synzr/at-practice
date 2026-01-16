@@ -109,6 +109,11 @@ final class TaskController extends AbstractController
                 'success' => false,
                 'message' => 'Task not found'
             ], 404 /* Not Found */);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400 /* Bad Request */);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -164,6 +169,11 @@ final class TaskController extends AbstractController
                 'success' => false,
                 'message' => 'Task not found'
             ], 404 /* Not Found */);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400 /* Bad Request */);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -192,6 +202,11 @@ final class TaskController extends AbstractController
                 'success' => false,
                 'message' => 'Task not found'
             ], 404 /* Not Found */);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400 /* Bad Request */);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,

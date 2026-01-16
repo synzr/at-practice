@@ -19,7 +19,9 @@
             <h5 class="card-title">
                 {{ task.name }}
 
-                {% if task.isDone %}
+                {% if task.isDeleted %}
+                <span class="badge bg-danger">Удалено</span>
+                {% elseif task.isDone %}
                 <span class="badge bg-success">Выполнено</span>
                 {% else %}
                 <span class="badge bg-danger">Не выполнено</span>
@@ -37,6 +39,7 @@
                     Действия
                 </button>
                 <ul class="dropdown-menu">
+                    {% if not task.isDeleted %}
                     <li>
                         {% if task.isDone %}
                         <button class="dropdown-item" role="button" data-action="click->task-item#done">
@@ -55,6 +58,7 @@
                     </li>
 
                     <li><hr class="dropdown-divider"></li>
+                    {% endif %}
 
                     {% if task.isDeleted %}
                     <li>
@@ -62,12 +66,13 @@
                             Восстановить
                         </button>
                     </li>
-                    {% endif %}
+                    {% else %}
                     <li>
                         <button class="dropdown-item" role="button" data-action="click->task-item#delete">
                             Удалить
                         </button>
                     </li>
+                    {% endif %}
                     <li>
                         <button class="dropdown-item" role="button" data-action="click->task-item#fullDelete">
                             Удалить бесвозвратно

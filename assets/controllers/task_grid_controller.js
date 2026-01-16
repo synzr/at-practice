@@ -6,18 +6,18 @@ export default class extends Controller {
     // NOTE: регистрируем собственные события
     this.element.addEventListener("task-grid:add", this.onTaskAdded.bind(this));
     this.element.addEventListener("task-grid:change", this.onTaskChanged.bind(this));
-    this.element.addEventListener("task-grid:delete", this.onTaskDeleted.bind(this));
 
     // NOTE: регистрируем события от других контроллеров
     this.element.addEventListener("task-item:done", this.onTaskChanged.bind(this));
-    this.element.addEventListener("task-item:delete", this.onTaskDeleted.bind(this));
+    this.element.addEventListener("task-item:soft-delete", this.onTaskChanged.bind(this));
     this.element.addEventListener("task-item:restore", this.onTaskChanged.bind(this));
+    this.element.addEventListener("task-item:full-delete", this.onTaskDeleted.bind(this));
 
     // NOTE: инциализируем Masonry-верстку
     this.grid = new Masonry(this.element, {
       itemSelector: ".task-item",
       percentPosition: true,
-      transitionDuration: "0s", // TODO: отключить анимацию по-нормальному
+      transitionDuration: "0.1s",
     });
   }
 
@@ -77,6 +77,7 @@ export default class extends Controller {
     }
 
     // NOTE: удаляем задачу из Masonry-верстки
+    item.remove();
     this.grid.remove(item);
     this.grid.layout();
   }
