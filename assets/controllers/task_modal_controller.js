@@ -52,7 +52,7 @@ export default class extends Controller {
    * @param {CustomEvent} event Событие редактирования задачи
    */
   openEditModal(event) {
-    const { id, name, description, deadline } = event.detail;
+    const { name, description, deadline } = event.detail;
 
     // NOTE: заполнение формы
     const form = this.formTarget;
