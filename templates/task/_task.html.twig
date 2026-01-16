@@ -9,7 +9,28 @@
         </div>
 
         <div class="card-footer d-flex flex-row-reverse justify-content-between align-items-center">
-            <a href="#" class="btn btn-light">...</a>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Действия
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            Отметить как выполненное
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            Редактировать
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            Удалить
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
             {% if task.deadline %}
             <small class="text-muted">До {{ task.deadline|date('d.m.Y') }}</small>
