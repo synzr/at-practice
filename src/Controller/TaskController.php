@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\TaskDto;
+use App\Dto\DeleteOrRestoreDto;
 use App\Entity\Task;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 
 final class TaskController extends AbstractController
 {
@@ -119,9 +121,22 @@ final class TaskController extends AbstractController
      * Удалить задачу безвозвратно
      */
     #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
-    public function delete(Task $task)
+    public function delete(int $id)
     {
-        return $this->json(['success' => false], 501 /* Not Implemented */);
+        try {
+            $this->taskService->fullDeleteTask($id);
+            return $this->json(['success' => true], 200 /* OK */);
+        } catch (EntityNotFoundException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Task not found'
+            ], 404 /* Not Found */);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Failed to delete task'
+            ], 500 /* Internal Server Error */);
+        }
     }
     // #endregion
 
@@ -129,9 +144,32 @@ final class TaskController extends AbstractController
      * Удалить (по флагу) или восстановить задачу
      */
     #[Route('/{id}/delete-or-restore', name: 'task_delete_or_restore', methods: ['POST'])]
-    public function deleteOrRestore(int $id)
+    public function deleteOrRestore(#[MapRequestPayload] DeleteOrRestoreDto $dto, int $id)
     {
-        return $this->json(['success' => false], 501 /* Not Implemented */);
+        try {
+            $this->taskService->deleteOrRestoreTask($id, $dto->flag);
+
+            // Получаем обновленную задачу из базы данных
+            $task = $this->taskRepository->find($id);
+
+            return $this->json([
+                'success' => true,
+                'task' => [
+                    'id' => $task->getId(),
+                    'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+                ],
+            ], 200 /* OK */);
+        } catch (EntityNotFoundException $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Task not found'
+            ], 404 /* Not Found */);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Failed to update task'
+            ], 500 /* Internal Server Error */);
+        }
     }
 
     /**

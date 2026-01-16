@@ -87,4 +87,39 @@ class TaskService
 
         return $task;
     }
+
+    /**
+     * Безвозвратно удалить задачу (hard delete)
+     * @param int $taskId Идентификатор задачи
+     * @throws EntityNotFoundException Если задача не найдена
+     */
+    public function fullDeleteTask(int $taskId): void
+    {
+        $task = $this->taskRepository->find($taskId);
+
+        if (!$task) {
+            throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+        }
+
+        $this->entityManager->remove($task);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Удалить или восстановить задачу в зависимости от флага
+     * @param int $taskId Идентификатор задачи
+     * @param bool $deleteFlag Флаг удаления (true для удаления, false для восстановления)
+     * @throws EntityNotFoundException Если задача не найдена
+     */
+    public function deleteOrRestoreTask(int $taskId, bool $deleteFlag): void
+    {
+        $task = $this->taskRepository->find($taskId);
+
+        if (!$task) {
+            throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
+        }
+
+        $task->setIsDeleted($deleteFlag);
+        $this->entityManager->flush();
+    }
 }

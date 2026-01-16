@@ -6,7 +6,6 @@
 <div
     data-controller="task-modal"
     data-task-modal-create-url-value="{{ path('task_create') }}"
-    data-task-modal-edit-url-value="{{ path('task_update', {id: 0}) }}"
 >
     <main class="container-sm">
         <section class="container-fluid">
@@ -72,7 +71,7 @@
                     attr: {
                         id: 'task-form',
                         'data-task-modal-target': 'form',
-                        'data-action': 'submit->task#submitForm'
+                        'data-action': 'submit->task-modal#submitForm'
                     },
                 }) }}
                     <div class="modal-body">

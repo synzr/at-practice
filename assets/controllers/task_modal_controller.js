@@ -16,7 +16,6 @@ export default class extends Controller {
   static targets = ["grid", "form", "title", "submit"];
   static values = {
     createUrl: String,
-    editUrl: String,
   };
 
   connect() {
@@ -26,6 +25,12 @@ export default class extends Controller {
     this.element.addEventListener(
       "task-item:edit",
       this.openEditModal.bind(this)
+    );
+
+    // Listen for delete events from task items
+    this.element.addEventListener(
+      "task-item:delete",
+      this.onTaskDeleted.bind(this)
     );
   }
 
@@ -64,7 +69,7 @@ export default class extends Controller {
     }
 
     // NOTE: установка URL и режима для отправки формы
-    form.action = this.editUrlValue.replace("0", id);
+    form.action = event.detail.editUrl;
     this.formMode = "edit";
 
     // NOTE: открытие модального окна
@@ -108,7 +113,7 @@ export default class extends Controller {
 
         // NOTE: говорим гриду задач, что у нас новый или измененный элемент
         if (this.hasGridTarget) {
-          const eventName = isEdit ? "task-item:edit" : "task-item:add";
+          const eventName = isEdit ? "task-grid:change" : "task-grid:add";
           const eventDetail = isEdit
             ? { id: data.task.id, html: data.task.html }
             : data.task;
@@ -133,5 +138,21 @@ export default class extends Controller {
             : "Во время создания задачи произошла ошибка"
         );
       });
+  }
+
+  /**
+   * Обработчик события удаления задачи
+   * @param {CustomEvent} event Событие удаления задачи
+   */
+  onTaskDeleted(event) {
+    // NOTE: говорим гриду задач, что у нас удаленный элемент
+    if (this.hasGridTarget) {
+      this.gridTarget.dispatchEvent(
+        new CustomEvent("task-grid:delete", {
+          bubbles: true,
+          detail: { id: event.detail.id },
+        })
+      );
+    }
   }
 }

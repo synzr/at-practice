@@ -7,19 +7,22 @@ export default class extends Controller {
     description: String,
     deadline: String,
     doneUrl: String,
+    fullDeleteUrl: String,
+    deleteOrRestoreUrl: String,
+    editUrl: String,
   };
 
   // #region Действия
   done() {
-    fetch(this.doneUrlValue, { method: 'POST' })
+    fetch(this.doneUrlValue, { method: "POST" })
       .then((response) => response.json())
       .then((data) => {
         if (!data.success) {
-          alert('Ошибка выполнения задачи');
+          alert("Ошибка выполнения задачи");
         }
 
         this.dispatch("done", { detail: data.task });
-      })
+      });
   }
 
   edit() {
@@ -29,14 +32,51 @@ export default class extends Controller {
         name: this.nameValue,
         description: this.descriptionValue,
         deadline: this.deadlineValue,
+        editUrl: this.editUrlValue,
       },
     });
   }
 
-  delete() {}
+  delete() {
+    this.deleteOrRestore(true);
+  }
 
-  fullDelete() {}
+  fullDelete() {
+    fetch(this.fullDeleteUrlValue, { method: "DELETE" })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data.success) {
+          alert("Ошибка удаления задачи");
+          return;
+        }
 
-  restore() {}
+        this.dispatch("delete", { detail: { id: this.idValue } });
+      });
+  }
+
+  restore() {
+    this.deleteOrRestore(false);
+  }
   // #endregion
+
+  deleteOrRestore(flag) {
+    fetch(this.deleteOrRestoreUrlValue, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ flag }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data.success) {
+          alert("Ошибка удаления задачи");
+          return;
+        }
+
+        this.dispatch(flag ? "delete" : "restore", {
+          detail: data.task ?? { id: this.idValue },
+        });
+      });
+  }
 }

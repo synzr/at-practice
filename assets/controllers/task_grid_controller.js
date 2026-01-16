@@ -10,6 +10,8 @@ export default class extends Controller {
 
     // NOTE: регистрируем события от других контроллеров
     this.element.addEventListener("task-item:done", this.onTaskChanged.bind(this));
+    this.element.addEventListener("task-item:delete", this.onTaskDeleted.bind(this));
+    this.element.addEventListener("task-item:restore", this.onTaskChanged.bind(this));
 
     // NOTE: инциализируем Masonry-верстку
     this.grid = new Masonry(this.element, {

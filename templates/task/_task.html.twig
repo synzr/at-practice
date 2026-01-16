@@ -10,6 +10,9 @@
     data-task-item-deadline-value="{{ task.deadline|date('c') }}"
     {% endif %}
     data-task-item-done-url-value="{{ path('task_done', {id: task.id}) }}"
+    data-task-item-edit-url-value="{{ path('task_update', {id: task.id}) }}"
+    data-task-item-full-delete-url-value="{{ path('task_delete', {id: task.id}) }}"
+    data-task-item-delete-or-restore-url-value="{{ path('task_delete_or_restore', {id: task.id}) }}"
 >
     <div class="card">
         <div class="card-body">
