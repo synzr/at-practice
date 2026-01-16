@@ -82,7 +82,7 @@ class TaskService
             throw new EntityNotFoundException('Task not found with ID: ' . $taskId);
         }
 
-        $task->setDone(!$task->isDone());
+        $task->setIsDone(!$task->isDone());
         $this->entityManager->flush();
 
         return $task;

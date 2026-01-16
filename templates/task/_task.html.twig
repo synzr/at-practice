@@ -9,6 +9,7 @@
     {% if task.deadline %}
     data-task-item-deadline-value="{{ task.deadline|date('c') }}"
     {% endif %}
+    data-task-item-done-url-value="{{ path('task_done', {id: task.id}) }}"
 >
     <div class="card">
         <div class="card-body">

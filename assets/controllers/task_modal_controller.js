@@ -108,7 +108,7 @@ export default class extends Controller {
 
         // NOTE: говорим гриду задач, что у нас новый или измененный элемент
         if (this.hasGridTarget) {
-          const eventName = isEdit ? "task:edit" : "task:add";
+          const eventName = isEdit ? "task-item:edit" : "task-item:add";
           const eventDetail = isEdit
             ? { id: data.task.id, html: data.task.html }
             : data.task;

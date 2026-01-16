@@ -3,32 +3,20 @@ import Masonry from "masonry-layout";
 
 export default class extends Controller {
   connect() {
-    // NOTE: регистрируем события
-    this._onAdd = this.onTaskAdded.bind(this);
-    this.element.addEventListener("task:add", this._onAdd);
+    // NOTE: регистрируем собственные события
+    this.element.addEventListener("task-grid:add", this.onTaskAdded.bind(this));
+    this.element.addEventListener("task-grid:change", this.onTaskChanged.bind(this));
+    this.element.addEventListener("task-grid:delete", this.onTaskDeleted.bind(this));
 
-    this._onEdit = this.onTaskEdited.bind(this);
-    this.element.addEventListener("task:edit", this._onEdit);
-
-    this._onDelete = this.onTaskDeleted.bind(this);
-    this.element.addEventListener("task:delete", this._onDelete);
+    // NOTE: регистрируем события от других контроллеров
+    this.element.addEventListener("task-item:done", this.onTaskChanged.bind(this));
 
     // NOTE: инциализируем Masonry-верстку
     this.grid = new Masonry(this.element, {
       itemSelector: ".task-item",
       percentPosition: true,
-      transitionDuration: "0.2s",
+      transitionDuration: "0s", // TODO: отключить анимацию по-нормальному
     });
-  }
-
-  disconnect() {
-    // NOTE: удаляем события
-    this.element.removeEventListener("task:add", this._onAdd);
-    this.element.removeEventListener("task:edit", this._onEdit);
-    this.element.removeEventListener("task:delete", this._onDelete);
-
-    // NOTE: удаляем Masonry-верстку
-    this.grid.destroy();
   }
 
   // #region События
@@ -52,7 +40,7 @@ export default class extends Controller {
    * Событие изменения задачи
    * @param {Event} event Событие
    */
-  onTaskEdited(event) {
+  onTaskChanged(event) {
     const { html, id } = event.detail;
 
     // NOTE: находим задачу в DOM
@@ -60,7 +48,7 @@ export default class extends Controller {
       `[data-task-item-id-value="${id}"]`
     );
     if (!item) {
-      console.error("onTaskEdited(): Changed task not found in DOM");
+      console.error("onTaskChanged(): Changed task not found in DOM");
       return;
     }
 

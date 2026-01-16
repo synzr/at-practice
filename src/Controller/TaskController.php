@@ -144,7 +144,10 @@ final class TaskController extends AbstractController
             $task = $this->taskService->flipDone($id);
             return $this->json([
                 'success' => true,
-                'task' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+                'task' => [
+                    'id' => $task->getId(),
+                    'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+                ],
             ], 200 /* OK */);
         } catch (EntityNotFoundException $e) {
             return $this->json([

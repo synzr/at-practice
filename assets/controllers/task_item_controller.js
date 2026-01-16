@@ -6,14 +6,21 @@ export default class extends Controller {
     name: String,
     description: String,
     deadline: String,
+    doneUrl: String,
   };
 
-  connect() {}
-
-  disconnect() {}
-
   // #region Действия
-  done() {}
+  done() {
+    fetch(this.doneUrlValue, { method: 'POST' })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data.success) {
+          alert('Ошибка выполнения задачи');
+        }
+
+        this.dispatch("done", { detail: data.task });
+      })
+  }
 
   edit() {
     this.dispatch("edit", {
