@@ -86,8 +86,10 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
-        "lint:php": [
-            "phpstan analyse -v --memory-limit 256M",
+        "analyse:php": [
+            "phpstan analyse --memory-limit 256M"
+        ],
+        "format:php": [
             "php-cs-fixer fix"
         ]
     },
