@@ -186,7 +186,7 @@ final class TaskController extends AbstractController
     }
 
     /**
-     * Пометить задачу как выполненную или наобратно.
+     * Пометить задачу как выполненную или наоборот.
      */
     #[Route('/{id}/done', name: 'task_done', methods: ['POST'])]
     public function done(int $id): JsonResponse

@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 import { Modal } from "bootstrap";
+import { AjaxClient } from "../lib/ajax_client";
 
 export default class extends Controller {
   static modalTexts = {
@@ -17,6 +18,10 @@ export default class extends Controller {
   static values = {
     createUrl: String,
   };
+
+  initialize() {
+    this.ajaxClient = new AjaxClient();
+  }
 
   connect() {
     this.modal = new Modal(document.getElementById("taskModal"));
@@ -95,28 +100,27 @@ export default class extends Controller {
     event.preventDefault();
 
     const form = this.formTarget;
-    const formData = new FormData(form);
     const isEdit = new URL(form.action).pathname !== this.createUrlValue;
 
-    fetch(form.action, {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (!data.success) {
-          alert(
-            isEdit ? "Ошибка редактирования задачи" : "Ошибка создания задачи"
-          ); // TODO: реализовать флэш для ошибок
-          return;
-        }
+    // NOTE: определяем метод ajax_client в зависимости от типа операции
+    let ajaxMethod;
+    if (isEdit) {
+      // NOTE: для редактирования извлекаем ID из URL
+      const url = new URL(form.action);
+      const id = url.pathname.split('/').pop();
+      ajaxMethod = this.ajaxClient.updateTask(id, form);
+    } else {
+      ajaxMethod = this.ajaxClient.createTask(form);
+    }
 
+    ajaxMethod
+      .then((task) => {
         // NOTE: говорим гриду задач, что у нас новый или измененный элемент
         if (this.hasGridTarget) {
           const eventName = isEdit ? "task-grid:change" : "task-grid:add";
           const eventDetail = isEdit
-            ? { id: data.task.id, html: data.task.html }
-            : data.task;
+            ? { id: task.id, html: task.html }
+            : task;
 
           this.gridTarget.dispatchEvent(
             new CustomEvent(eventName, {

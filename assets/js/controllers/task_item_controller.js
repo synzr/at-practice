@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
+import { AjaxClient } from "../lib/ajax_client";
 
 export default class extends Controller {
   static values = {
@@ -6,23 +7,22 @@ export default class extends Controller {
     name: String,
     description: String,
     deadline: String,
-    doneUrl: String,
-    fullDeleteUrl: String,
-    deleteOrRestoreUrl: String,
     editUrl: String,
   };
 
+  initialize() {
+    this.ajaxClient = new AjaxClient();
+  }
+
   // #region Действия
   done() {
-    fetch(this.doneUrlValue, { method: "POST" })
-      .then((response) => response.json())
-      .then((data) => {
-        if (!data.success) {
-          alert("Ошибка выполнения задачи: " + data.message);
-          return;
-        }
-
-        this.dispatch("done", { detail: data.task });
+    this.ajaxClient
+      .flipTaskDone(this.idValue)
+      .catch((error) => {
+        alert("Ошибка выполнения задачи: ", error.message);
+      })
+      .then((task) => {
+        this.dispatch("done", { detail: task });
       });
   }
 
@@ -43,15 +43,15 @@ export default class extends Controller {
   }
 
   fullDelete() {
-    fetch(this.fullDeleteUrlValue, { method: "DELETE" })
-      .then((response) => response.json())
-      .then((data) => {
-        if (!data.success) {
-          alert("Ошибка удаления задачи: " + data.message);
-          return;
-        }
-
-        this.dispatch("full-delete", { detail: { id: this.idValue } });
+    this.ajaxClient
+      .fullDeleteTask(this.idValue)
+      .catch((error) => {
+        alert("Ошибка удаления задачи: ", error.message);
+      })
+      .then(() => {
+        this.dispatch("full-delete", {
+          detail: { id: this.idValue },
+        });
       });
   }
 
@@ -61,23 +61,13 @@ export default class extends Controller {
   // #endregion
 
   deleteOrRestore(flag) {
-    fetch(this.deleteOrRestoreUrlValue, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ flag }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (!data.success) {
-          alert("Ошибка удаления задачи: " + data.message);
-          return;
-        }
-
-        this.dispatch(flag ? "soft-delete" : "restore", {
-          detail: data.task ?? { id: this.idValue },
-        });
+    this.ajaxClient
+      .deleteOrRestoreTask(this.idValue, flag)
+      .catch((error) => {
+        alert("Ошибка удаления задачи: ", error.message);
+      })
+      .then((task) => {
+        this.dispatch(flag ? "soft-delete" : "restore", { detail: task });
       });
   }
 }
