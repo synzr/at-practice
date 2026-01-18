@@ -66,8 +66,8 @@ class TaskService
     /**
      * Сохранить задачу в базе данных.
      *
-     * @param Task|null $task     Задача для сохранения
-     * @param TaskDto   $taskDto  Данные задачи
+     * @param Task|null $task    Задача для сохранения
+     * @param TaskDto   $taskDto Данные задачи
      *
      * @return Task Сохраненная задача
      */

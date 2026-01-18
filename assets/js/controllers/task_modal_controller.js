@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
 import { Modal } from "bootstrap";
 import { AjaxClient } from "../lib/ajax_client";
+import eventBus from "../lib/event_bus";
 
 export default class extends Controller {
   static modalTexts = {
@@ -8,7 +9,7 @@ export default class extends Controller {
       title: "Создание задачи",
       submitText: "Создать",
     },
-    edit: {
+    update: {
       title: "Редактирование задачи",
       submitText: "Сохранить",
     },
@@ -24,25 +25,17 @@ export default class extends Controller {
   }
 
   connect() {
-    this.modal = new Modal(document.getElementById("taskModal"));
-
-    // Listen for edit events from task items
-    this.element.addEventListener(
-      "task-item:edit",
-      this.openEditModal.bind(this)
-    );
-
-    // Listen for delete events from task items
-    this.element.addEventListener(
-      "task-item:delete",
-      this.onTaskDeleted.bind(this)
-    );
+    this.modal = new Modal("#taskModal");
+    eventBus.on("task:edit", this.openEditModal.bind(this));
   }
 
   /**
    * Открытие модального окна для создания
    */
   openCreateModal() {
+    // NOTE: сброс данных формы
+    delete this.formTarget.dataset.id;
+
     // NOTE: сбор формы и установка URL и режима
     this.formTarget.action = this.createUrlValue;
     this.formTarget.reset();
@@ -57,12 +50,15 @@ export default class extends Controller {
    * @param {CustomEvent} event Событие редактирования задачи
    */
   openEditModal(event) {
-    const { name, description, deadline } = event.detail;
+    const { id, name, description, deadline } = event.detail;
 
     // NOTE: заполнение формы
     const form = this.formTarget;
+
     form.querySelector('[name="task[name]"]').value = name;
     form.querySelector('[name="task[description]"]').value = description || "";
+
+    form.dataset.id = id;
 
     // NOTE: форматирование даты
     if (deadline) {
@@ -75,7 +71,7 @@ export default class extends Controller {
 
     // NOTE: установка URL и режима для отправки формы
     form.action = event.detail.editUrl;
-    this.formMode = "edit";
+    this.formMode = "update";
 
     // NOTE: открытие модального окна
     this.openModal();
@@ -92,6 +88,7 @@ export default class extends Controller {
     this.modal.show();
   }
 
+  // #region Обработка формы
   /**
    * Отправка формы
    * @param {SubmitEvent} event Событие отправки формы
@@ -99,64 +96,49 @@ export default class extends Controller {
   submitForm(event) {
     event.preventDefault();
 
-    const form = this.formTarget;
-    const isEdit = new URL(form.action).pathname !== this.createUrlValue;
+    switch (this.formMode) {
+      case "create":
+        this.createTask();
+        break;
 
-    // NOTE: определяем метод ajax_client в зависимости от типа операции
-    let ajaxMethod;
-    if (isEdit) {
-      // NOTE: для редактирования извлекаем ID из URL
-      const url = new URL(form.action);
-      const id = url.pathname.split('/').pop();
-      ajaxMethod = this.ajaxClient.updateTask(id, form);
-    } else {
-      ajaxMethod = this.ajaxClient.createTask(form);
+      case "update":
+        this.updateTask();
+        break;
     }
+  }
 
-    ajaxMethod
-      .then((task) => {
-        // NOTE: говорим гриду задач, что у нас новый или измененный элемент
-        if (this.hasGridTarget) {
-          const eventName = isEdit ? "task-grid:change" : "task-grid:add";
-          const eventDetail = isEdit
-            ? { id: task.id, html: task.html }
-            : task;
-
-          this.gridTarget.dispatchEvent(
-            new CustomEvent(eventName, {
-              bubbles: true,
-              detail: eventDetail,
-            })
-          );
-        }
-
-        // NOTE: скрываем модальное окно и очищаем форму
-        this.modal.hide();
-      })
+  /**
+   * Обработка создания задачи.
+   */
+  createTask() {
+    this.ajaxClient
+      .createTask(this.id, this.formTarget)
       .catch((error) => {
-        // TODO: реализовать флэш для ошибок
         console.error("Task request error:", error);
-        alert(
-          isEdit
-            ? "Во время редактирования задачи произошла ошибка"
-            : "Во время создания задачи произошла ошибка"
-        );
+        alert("Во время создания задачи произошла ошибка");
+      })
+      .then((task) => {
+        eventBus.emit("task:created", task);
+        this.modal.hide();
       });
   }
 
   /**
-   * Обработчик события удаления задачи
-   * @param {CustomEvent} event Событие удаления задачи
+   * Обработка редактирования задачи.
    */
-  onTaskDeleted(event) {
-    // NOTE: говорим гриду задач, что у нас удаленный элемент
-    if (this.hasGridTarget) {
-      this.gridTarget.dispatchEvent(
-        new CustomEvent("task-grid:delete", {
-          bubbles: true,
-          detail: { id: event.detail.id },
-        })
-      );
-    }
+  updateTask() {
+    // NOTE: получение ID задачи
+    const id = parseInt(this.formTarget.dataset.id, 10);
+
+    this.ajaxClient.updateTask(id, this.formTarget)
+      .catch((error) => {
+        console.error("Task request error:", error);
+        alert("Во время редактирования задачи произошла ошибка");
+      })
+      .then((task) => {
+        eventBus.emit("task:updated", task);
+        this.modal.hide();
+      });
   }
+  // #endregion
 }

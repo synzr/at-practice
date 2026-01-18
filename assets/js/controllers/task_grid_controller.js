@@ -1,17 +1,16 @@
 import { Controller } from "@hotwired/stimulus";
 import Masonry from "masonry-layout";
+import eventBus from "../lib/event_bus";
 
 export default class extends Controller {
   connect() {
-    // NOTE: регистрируем собственные события
-    this.element.addEventListener("task-grid:add", this.onTaskAdded.bind(this));
-    this.element.addEventListener("task-grid:change", this.onTaskChanged.bind(this));
-
-    // NOTE: регистрируем события от других контроллеров
-    this.element.addEventListener("task-item:done", this.onTaskChanged.bind(this));
-    this.element.addEventListener("task-item:soft-delete", this.onTaskChanged.bind(this));
-    this.element.addEventListener("task-item:restore", this.onTaskChanged.bind(this));
-    this.element.addEventListener("task-item:full-delete", this.onTaskDeleted.bind(this));
+    // NOTE: регистрируем события
+    eventBus.on("task:created", this.onTaskCreated.bind(this))
+    eventBus.on("task:updated", this.onTaskUpdated.bind(this))
+    eventBus.on("task:done", this.onTaskUpdated.bind(this))
+    eventBus.on("task:soft-delete", this.onTaskUpdated.bind(this))
+    eventBus.on("task:full-delete", this.onTaskDeleted.bind(this))
+    eventBus.on("task:restore", this.onTaskUpdated.bind(this))
 
     // NOTE: инциализируем Masonry-верстку
     this.grid = new Masonry(this.element, {
@@ -26,7 +25,7 @@ export default class extends Controller {
    * Событие добавления задачи
    * @param {Event} event Событие
    */
-  onTaskAdded(event) {
+  onTaskCreated(event) {
     const html = event.detail;
 
     // NOTE: добавляем задачу в начало DOM
@@ -42,7 +41,8 @@ export default class extends Controller {
    * Событие изменения задачи
    * @param {Event} event Событие
    */
-  onTaskChanged(event) {
+  onTaskUpdated(event) {
+    console.debug('event.detail:', event.detail);
     const { html, id } = event.detail;
 
     // NOTE: находим задачу в DOM
@@ -50,7 +50,7 @@ export default class extends Controller {
       `[data-task-item-id-value="${id}"]`
     );
     if (!item) {
-      console.error("onTaskChanged(): Changed task not found in DOM");
+      console.error("onTaskUpdated(): Changed task not found in DOM");
       return;
     }
 

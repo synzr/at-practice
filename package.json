@@ -28,7 +28,7 @@
         "dev": "encore dev",
         "watch": "encore dev --watch",
         "build": "encore production --progress",
-        "lint:js": "eslint assets/js/**/*.js",
-        "format:js": "eslint assets/js/**/*.js --fix"
+        "lint:js": "eslint assets/js",
+        "format:js": "eslint assets/js --fix"
     }
 }
