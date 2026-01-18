@@ -113,13 +113,14 @@ export default class extends Controller {
   createTask() {
     this.ajaxClient
       .createTask(this.id, this.formTarget)
+      .then((task) => {
+        console.log("Task created:", task);
+        eventBus.emit("task:created", task);
+        this.modal.hide();
+      })
       .catch((error) => {
         console.error("Task request error:", error);
         alert("Во время создания задачи произошла ошибка");
-      })
-      .then((task) => {
-        eventBus.emit("task:created", task);
-        this.modal.hide();
       });
   }
 
@@ -131,13 +132,13 @@ export default class extends Controller {
     const id = parseInt(this.formTarget.dataset.id, 10);
 
     this.ajaxClient.updateTask(id, this.formTarget)
-      .catch((error) => {
-        console.error("Task request error:", error);
-        alert("Во время редактирования задачи произошла ошибка");
-      })
       .then((task) => {
         eventBus.emit("task:updated", task);
         this.modal.hide();
+      })
+      .catch((error) => {
+        console.error("Task request error:", error);
+        alert("Во время редактирования задачи произошла ошибка");
       });
   }
   // #endregion

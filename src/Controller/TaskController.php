@@ -7,7 +7,6 @@ use App\Dto\TaskDto;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use App\Service\TaskService;
-use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -90,36 +89,19 @@ final class TaskController extends AbstractController
             return $this->json(['success' => false], 400 /* Bad Request */);
         }
 
-        try {
-            // NOTE: обновляем задачу через сервис
-            $this->taskService->updateTask($id, $form->getData());
+        // NOTE: обновляем задачу через сервис
+        $this->taskService->updateTask($id, $form->getData());
 
-            // NOTE: получаем обновленную задачу из базы данных
-            $task = $this->taskRepository->find($id);
+        // NOTE: получаем обновленную задачу из базы данных
+        $task = $this->taskRepository->find($id);
 
-            return $this->json([
-                'success' => true,
-                'task' => [
-                    'id' => $task->getId(),
-                    'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-                ],
-            ], 202 /* Accepted */);
-        } catch (EntityNotFoundException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Task not found',
-            ], 404 /* Not Found */);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400 /* Bad Request */);
-        } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Failed to update task',
-            ], 500 /* Internal Server Error */);
-        }
+        return $this->json([
+            'success' => true,
+            'task' => [
+                'id' => $task->getId(),
+                'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+            ],
+        ], 202 /* Accepted */);
     }
 
     /**
@@ -128,21 +110,9 @@ final class TaskController extends AbstractController
     #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
-        try {
-            $this->taskService->fullDeleteTask($id);
+        $this->taskService->fullDeleteTask($id);
 
-            return $this->json(['success' => true], 200 /* OK */);
-        } catch (EntityNotFoundException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Task not found',
-            ], 404 /* Not Found */);
-        } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Failed to delete task',
-            ], 500 /* Internal Server Error */);
-        }
+        return $this->json(['success' => true], 200 /* OK */);
     }
     // #endregion
 
@@ -154,35 +124,18 @@ final class TaskController extends AbstractController
         #[MapRequestPayload] DeleteOrRestoreDto $dto,
         int $id,
     ): JsonResponse {
-        try {
-            $this->taskService->deleteOrRestoreTask($id, $dto->flag);
+        $this->taskService->deleteOrRestoreTask($id, $dto->flag);
 
-            // Получаем обновленную задачу из базы данных
-            $task = $this->taskRepository->find($id);
+        // Получаем обновленную задачу из базы данных
+        $task = $this->taskRepository->find($id);
 
-            return $this->json([
-                'success' => true,
-                'task' => [
-                    'id' => $task->getId(),
-                    'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-                ],
-            ], 200 /* OK */);
-        } catch (EntityNotFoundException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Task not found',
-            ], 404 /* Not Found */);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400 /* Bad Request */);
-        } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Failed to update task',
-            ], 500 /* Internal Server Error */);
-        }
+        return $this->json([
+            'success' => true,
+            'task' => [
+                'id' => $task->getId(),
+                'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+            ],
+        ], 200 /* OK */);
     }
 
     /**
@@ -191,31 +144,14 @@ final class TaskController extends AbstractController
     #[Route('/{id}/done', name: 'task_done', methods: ['POST'])]
     public function done(int $id): JsonResponse
     {
-        try {
-            $task = $this->taskService->flipDone($id);
+        $task = $this->taskService->flipDone($id);
 
-            return $this->json([
-                'success' => true,
-                'task' => [
-                    'id' => $task->getId(),
-                    'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-                ],
-            ], 200 /* OK */);
-        } catch (EntityNotFoundException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Task not found',
-            ], 404 /* Not Found */);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400 /* Bad Request */);
-        } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Failed to update task',
-            ], 500 /* Internal Server Error */);
-        }
+        return $this->json([
+            'success' => true,
+            'task' => [
+                'id' => $task->getId(),
+                'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
+            ],
+        ], 200 /* OK */);
     }
 }

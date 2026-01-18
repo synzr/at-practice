@@ -19,11 +19,11 @@ export default class extends Controller {
   done() {
     this.ajaxClient
       .flipTaskDone(this.idValue)
-      .catch((error) => {
-        alert("Ошибка выполнения задачи: ", error.message);
-      })
       .then((task) => {
         eventBus.emit("task:done", task);
+      })
+      .catch((error) => {
+        alert("Ошибка выполнения задачи: ", error.message);
       });
   }
 
@@ -44,11 +44,11 @@ export default class extends Controller {
   fullDelete() {
     this.ajaxClient
       .fullDeleteTask(this.idValue)
-      .catch((error) => {
-        alert("Ошибка удаления задачи: ", error.message);
-      })
       .then(() => {
         eventBus.emit("task:full-delete", { id: this.idValue });
+      })
+      .catch((error) => {
+        alert("Ошибка удаления задачи: ", error.message);
       });
   }
 
@@ -60,11 +60,11 @@ export default class extends Controller {
   deleteOrRestore(flag) {
     this.ajaxClient
       .deleteOrRestoreTask(this.idValue, flag)
-      .catch((error) => {
-        alert("Ошибка удаления задачи: ", error.message);
-      })
       .then((task) => {
         eventBus.emit(flag ? "task:soft-delete" : "task:restore", task);
+      })
+      .catch((error) => {
+        alert("Ошибка удаления задачи: ", error.message);
       });
   }
 }

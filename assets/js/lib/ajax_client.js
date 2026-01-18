@@ -13,6 +13,7 @@ export class AjaxClient {
     // NOTE: Сборка и отправка запроса
     const request = {
       headers: {
+        Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       },
       method,
