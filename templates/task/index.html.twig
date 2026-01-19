@@ -3,7 +3,7 @@
 {% block title %}Список задач{% endblock %}
 
 {% block body %}
-<div data-controller="modal">
+<div data-controller="modals">
     <main class="container-sm">
         <section class="container-fluid">
             <h1>Список задач</h1>
@@ -76,7 +76,7 @@
         <section class="container-fluid d-flex flex-row-reverse gap-1 mb-3">
             <button
                 class="btn btn-primary"
-                data-action="click->modal#openCreateModal"
+                data-action="click->modals#openCreateModal"
             >
                 Добавить задачу
             </button>
@@ -85,7 +85,7 @@
         <section
             class="container-fluid row"
             data-controller="grid"
-            data-modal-target="grid"
+            data-modals-target="grid"
         >
             {% include 'task/_tasks.html.twig' with { tasks: tasks } %}
         </section>
@@ -97,15 +97,15 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="taskModalLabel" data-modal-target="title">Добавить задачу</h5>
+                    <h5 class="modal-title" id="taskModalLabel" data-modals-target="title">Добавить задачу</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 {{ form_start(form, {
                     attr: {
                         id: 'task-form',
-                        'data-modal-target': 'form',
-                        'data-action': 'submit->modal#submitForm'
+                        'data-modals-target': 'form',
+                        'data-action': 'submit->modals#submitForm'
                     },
                 }) }}
                     <div class="modal-body">
@@ -114,9 +114,28 @@
                         {{ form_row(form.deadline) }}
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" data-modal-target="submit">Создать</button>
+                        <button type="submit" class="btn btn-primary" data-modals-target="submit">Создать</button>
                     </div>
                 {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    {# Модал подтверждения #}
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" data-controller="confirm-delete">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Подтверждение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить задачу без возможности восстановления?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton" data-action="click->modals#delete" data-modals-target="confirmSubmit">Удалить</button>
+                </div>
             </div>
         </div>
     </div>

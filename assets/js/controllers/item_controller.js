@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
-import { AjaxClient } from "../lib/ajax_client";
 import { getFilterOptions } from "../lib/utils";
+import ajaxClient from "../lib/ajax_client";
 import eventBus from "../lib/event_bus";
 
 export default class extends Controller {
@@ -11,13 +11,9 @@ export default class extends Controller {
     deadline: String,
   };
 
-  initialize() {
-    this.ajaxClient = new AjaxClient();
-  }
-
   // #region Действия
   done() {
-    this.ajaxClient
+    ajaxClient
       .toggleDone(this.idValue)
       .then((task) => {
         const statusFilter = getFilterOptions().status;
@@ -48,14 +44,7 @@ export default class extends Controller {
   }
 
   delete() {
-    this.ajaxClient
-      .delete(this.idValue)
-      .then(() => {
-        eventBus.emit("task:deleted", { id: this.idValue });
-      })
-      .catch((error) => {
-        alert("Ошибка удаления задачи: ", error.message);
-      });
+    eventBus.emit("modal:delete", { id: this.idValue });
   }
 
   restore() {
@@ -64,7 +53,7 @@ export default class extends Controller {
   // #endregion
 
   _setDeleted(flag) {
-    this.ajaxClient
+    ajaxClient
       .setDeleted(this.idValue, flag)
       .then((task) => {
         const statusFilter = getFilterOptions().status;

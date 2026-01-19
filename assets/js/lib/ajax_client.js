@@ -136,3 +136,5 @@ export class AjaxClient {
   }
   // #endregion
 }
+
+export default new AjaxClient();

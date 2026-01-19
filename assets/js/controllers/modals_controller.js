@@ -1,29 +1,28 @@
 import { Controller } from "@hotwired/stimulus";
-import { AjaxClient } from "../lib/ajax_client";
 import { getFilterOptions } from "../lib/utils";
-import { Modal } from "bootstrap";
+import ajaxClient from "../lib/ajax_client";
 import eventBus from "../lib/event_bus";
+import { Modal } from "bootstrap";
 
 export default class extends Controller {
   static modalTexts = {
     create: {
-      title: "Создание задачи",
-      submitText: "Создать",
+      title: "Создать задачу",
+      submitText: "Сохранить",
     },
     update: {
-      title: "Редактирование задачи",
+      title: "Редактировать задачу",
       submitText: "Сохранить",
     },
   };
-  static targets = ["grid", "form", "title", "submit"];
-
-  initialize() {
-    this.ajaxClient = new AjaxClient();
-  }
+  static targets = ["grid", "form", "title", "submit", "confirmSubmit"];
 
   connect() {
-    this.modal = new Modal("#taskModal");
-    eventBus.on("modal:update", this.openEditModal.bind(this));
+    this.taskModal = new Modal("#taskModal");
+    this.confirmModal = new Modal("#confirmModal");
+
+    eventBus.on("modal:update", this.openUpdateModal.bind(this));
+    eventBus.on("modal:delete", this.openDeleteModal.bind(this));
   }
 
   /**
@@ -31,22 +30,21 @@ export default class extends Controller {
    */
   openCreateModal() {
     // NOTE: сброс данных формы
-    delete this.formTarget.dataset.id;
     this.formTarget.reset();
 
     // NOTE: сбор формы и установка URL и режима
     this.formTarget.action = this.createUrlValue;
-    this.formMode = "create";
+    this.taskFormMode = "create";
 
     // NOTE: открытие модального окна
-    this.openModal();
+    this.openTaskModal();
   }
 
   /**
    * Открытие модального окна для редактирования
    * @param {CustomEvent} event Событие редактирования задачи
    */
-  openEditModal(event) {
+  openUpdateModal(event) {
     const { id, name, description, deadline } = event.detail;
 
     // NOTE: заполнение формы
@@ -55,7 +53,7 @@ export default class extends Controller {
     form.querySelector('[name="task[name]"]').value = name;
     form.querySelector('[name="task[description]"]').value = description || "";
 
-    form.dataset.id = id;
+    this.updateFormId = id;
 
     // NOTE: форматирование даты
     if (deadline) {
@@ -67,24 +65,30 @@ export default class extends Controller {
     }
 
     // NOTE: установка URL и режима для отправки формы
-    this.formMode = "update";
+    this.taskFormMode = "update";
 
     // NOTE: открытие модального окна
-    this.openModal();
+    this.openTaskModal();
   }
 
-  openModal() {
+  openDeleteModal(event) {
+    // NOTE: записание id задачи в дата-атрибут
+    const { id } = event.detail;
+    this.deleteFormId = id;
+    this.confirmModal.show();
+  }
+
+  openTaskModal() {
     // NOTE: смена заголовка и текста кнопки
     this.titleTarget.textContent =
-      this.constructor.modalTexts[this.formMode].title;
+      this.constructor.modalTexts[this.taskFormMode].title;
     this.submitTarget.textContent =
-      this.constructor.modalTexts[this.formMode].submitText;
+      this.constructor.modalTexts[this.taskFormMode].submitText;
 
     // NOTE: открытие модального окна
-    this.modal.show();
+    this.taskModal.show();
   }
 
-  // #region Обработка формы
   /**
    * Отправка формы
    * @param {SubmitEvent} event Событие отправки формы
@@ -92,7 +96,8 @@ export default class extends Controller {
   submitForm(event) {
     event.preventDefault();
 
-    switch (this.formMode) {
+    // NOTE: выполнение действие в зависимости от режима
+    switch (this.taskFormMode) {
       case "create":
         this.create();
         break;
@@ -107,12 +112,12 @@ export default class extends Controller {
    * Обработка создания задачи.
    */
   create() {
-   this.ajaxClient
+   ajaxClient
      .create(this.formTarget)
       .then((task) => {
         console.log("Задача создана:", task);
         eventBus.emit("task:created", task);
-        this.modal.hide();
+        this.taskModal.hide();
       })
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
@@ -125,12 +130,12 @@ export default class extends Controller {
    */
   update() {
     // NOTE: получение ID задачи
-    const id = parseInt(this.formTarget.dataset.id, 10);
+    const id = parseInt(this.updateFormId, 10);
 
-    this.ajaxClient
+    ajaxClient
       .update(id, this.formTarget)
       .then((task) => {
-        this.modal.hide();
+        this.taskModal.hide();
 
         const filterOptions = getFilterOptions();
         if (
@@ -150,27 +155,43 @@ export default class extends Controller {
         alert("Во время редактирования задачи произошла ошибка");
       });
   }
-  // #endregion
-_shouldBeVisibleByDeadlineFilter(current, from, to) {
-  const hasFilter = from || to;
 
-  // If filter exists and task has no deadline → exclude
-  if (!current) {
-    return !hasFilter;
+  delete() {
+    ajaxClient
+      .delete(this.deleteFormId)
+      .then(() => {
+        eventBus.emit("task:deleted", {
+          id: this.deleteFormId,
+        });
+
+        this.confirmModal.hide();
+      })
+      .catch((error) => {
+        console.error("Ошибка запроса задачи:", error);
+        alert("Во время удаления задачи произошла ошибка");
+      });
   }
 
-  const currentDate = new Date(current);
-  const fromDate = from ? new Date(from) : null;
-  const toDate = to ? new Date(to) : null;
+  _shouldBeVisibleByDeadlineFilter(current, from, to) {
+    const hasFilter = from || to;
 
-  if (fromDate && currentDate < fromDate) {
-    return false;
+    // If filter exists and task has no deadline → exclude
+    if (!current) {
+      return !hasFilter;
+    }
+
+    const currentDate = new Date(current);
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+
+    if (fromDate && currentDate < fromDate) {
+      return false;
+    }
+
+    if (toDate && currentDate > toDate) {
+      return false;
+    }
+
+    return true;
   }
-
-  if (toDate && currentDate > toDate) {
-    return false;
-  }
-
-  return true;
-}
 }

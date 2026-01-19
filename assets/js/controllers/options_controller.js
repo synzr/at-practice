@@ -1,13 +1,11 @@
 import { Controller } from "@hotwired/stimulus";
-import { AjaxClient } from "../lib/ajax_client";
+import ajaxClient from "../lib/ajax_client";
 import eventBus from "../lib/event_bus";
 
 export default class extends Controller {
   static targets = ['form'];
 
   initialize() {
-    this.ajaxClient = new AjaxClient();
-
     // NOTE: сохранение изначальных параметров в сессию
     sessionStorage.setItem(
       'options', JSON.stringify(this._getFilterParams())
@@ -31,7 +29,7 @@ export default class extends Controller {
   }
 
   update(query) {
-    this.ajaxClient
+    ajaxClient
       .get(query)
       .then((html) => {
         eventBus.emit('grid:updated', html);
@@ -43,14 +41,14 @@ export default class extends Controller {
   }
 
   _getFilterParams() {
-    const formData = new FormData(this.formTarget);
-
+    // NOTE: получение параметров из формы фильтрации
     return Object.fromEntries(
-      formData.entries(),
+      new FormData(this.formTarget).entries(),
     );
   }
 
   _updateQuery(query) {
+    // NOTE: создание URL с параметрами
     const url = new URL(window.location.href);
     url.search = new URLSearchParams(query).toString();
 
