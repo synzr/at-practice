@@ -109,6 +109,7 @@ export default class extends Controller {
    */
   submitForm(event) {
     event.preventDefault();
+    this.submitTarget.disabled = true;
 
     // NOTE: выполнение действие в зависимости от режима
     switch (this.taskFormMode) {
@@ -137,6 +138,9 @@ export default class extends Controller {
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
         eventBus.emit("toast:message", "Во время создания задачи произошла ошибка");
+      })
+      .then(() => {
+        this.submitTarget.disabled = false;
       });
   }
 
@@ -171,6 +175,9 @@ export default class extends Controller {
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
         eventBus.emit("toast:message", "Во время редактирования задачи произошла ошибка");
+      })
+      .then(() => {
+        this.submitTarget.disabled = false;
       });
   }
 
@@ -178,6 +185,8 @@ export default class extends Controller {
    * Обработка удаления задачи.
    */
   delete() {
+    this.confirmSubmitTarget.disabled = true;
+
     ajaxClient
       .delete(this.deleteFormId)
       .then(() => {
@@ -194,6 +203,9 @@ export default class extends Controller {
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
         eventBus.emit("toast:message", "Во время удаления задачи произошла ошибка");
+      })
+      .then(() => {
+        this.confirmSubmitTarget.disabled = false;
       });
   }
 

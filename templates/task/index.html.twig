@@ -5,65 +5,10 @@
 {% block body %}
 <div data-controller="modals">
     <main class="container-sm">
-        <section class="container-fluid">
-            <h1>Список задач</h1>
-        </section>
-
-        {# Фильтры #}
-        <section class="container-fluid mb-3" data-controller="options">
-            <form method="get" id="filter-form" data-options-target="form">
-                <div class="row g-2">
-                    <div class="col-md-3">
-                        <select name="status" class="form-select" data-action="change->options#update">
-                            <option value="all"{{ filter.status == 'all' ? ' selected' : '' }}>Все задачи</option>
-                            <option value="active"{{ filter.status == 'active' ? ' selected' : '' }}>Активные</option>
-                            <option value="completed"{{ filter.status == 'completed' ? ' selected' : '' }}>Выполненные</option>
-                            <option value="deleted"{{ filter.status == 'deleted' ? ' selected' : '' }}>Удаленные</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <input
-                            type="date"
-                            name="deadline_from"
-                            class="form-control"
-                            placeholder="От даты"
-                            value="{{ filter.deadline_from }}"
-                            data-action="change->options#update"
-                        >
-                    </div>
-
-                    <div class="col-md-2">
-                        <input
-                            type="date"
-                            name="deadline_to"
-                            class="form-control"
-                            placeholder="До даты"
-                            value="{{ filter.deadline_to }}"
-                            data-action="change->options#update"
-                        >
-                    </div>
-
-                    <div class="col-md-2">
-                        <select name="sort" class="form-select" data-action="change->options#update">
-                            <option value="all"{{ sort.field == 'id' ? ' selected' : '' }}>По идентификатору</option>
-                            <option value="created_at"{{ sort.field == 'created_at' ? ' selected' : '' }}>По дате создания</option>
-                            <option value="deadline"{{ sort.field == 'deadline' ? ' selected' : '' }}>По дедлайну</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <select name="order" class="form-select" data-action="change->options#update">
-                            <option value="asc"{{ sort.order == 'asc' ? ' selected' : '' }}>По возрастанию</option>
-                            <option value="desc"{{ sort.order == 'desc' ? ' selected' : '' }}>По убыванию</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-        </section>
+        <h1 class="my-4">Список задач</h1>
 
         {# Панель действий #}
-        <section class="container-fluid d-flex flex-row-reverse gap-1 mb-3">
+        <section class="container-fluid d-flex flex-row-reverse gap-1 mb-4">
             <button
                 class="btn btn-primary"
                 data-action="click->modals#openCreateModal"
@@ -72,14 +17,59 @@
             </button>
         </section>
 
-        <section
-            class="container-fluid row"
-            data-controller="grid"
-            data-modals-target="grid"
-        >
-            {% include 'task/_tasks.html.twig' with { tasks: tasks } %}
-        </section>
+        <div class="row">
+            {# Фильтры #}
+            <section class="mb-3 col-md-3" data-controller="options">
+                <form method="get" id="filter-form" data-options-target="form">
+                    <label for="status" class="mb-2">Показывать:</label>
+                    <select name="status" class="form-select" data-action="change->options#update">
+                        <option value="all"{{ filter.status == 'all' ? ' selected' : '' }}>Все задачи</option>
+                        <option value="active"{{ filter.status == 'active' ? ' selected' : '' }}>Активные</option>
+                        <option value="completed"{{ filter.status == 'completed' ? ' selected' : '' }}>Выполненные</option>
+                        <option value="deleted"{{ filter.status == 'deleted' ? ' selected' : '' }}>Удаленные</option>
+                    </select>
 
+                    <label for="deadline_from" class="my-2">Дедлайн от:</label>
+                    <input
+                        type="date"
+                        name="deadline_from"
+                        class="form-control"
+                        value="{{ filter.deadline_from }}"
+                        data-action="change->options#update"
+                    >
+
+                    <label for="deadline_to" class="my-2">Дедлайн до:</label>
+                    <input
+                        type="date"
+                        name="deadline_to"
+                        class="form-control"
+                        value="{{ filter.deadline_to }}"
+                        data-action="change->options#update"
+                    >
+
+                    <label for="sort" class="my-2">Сортировать по:</label>
+                    <select name="sort" class="form-select" data-action="change->options#update">
+                        <option value="id"{{ sort.field == 'id' ? ' selected' : '' }}>По идентификатору</option>
+                        <option value="created_at"{{ sort.field == 'created_at' ? ' selected' : '' }}>По дате создания</option>
+                        <option value="deadline"{{ sort.field == 'deadline' ? ' selected' : '' }}>По дедлайну</option>
+                    </select>
+
+                    <label for="order" class="my-2">Порядок:</label>
+                    <select name="order" class="form-select" data-action="change->options#update">
+                        <option value="asc"{{ sort.order == 'asc' ? ' selected' : '' }}>По возрастанию</option>
+                        <option value="desc"{{ sort.order == 'desc' ? ' selected' : '' }}>По убыванию</option>
+                    </select>
+                </form>
+            </section>
+
+            <section
+                class="col-md-9"
+                data-controller="grid"
+                data-modals-target="grid"
+            >
+                {% include 'task/_tasks.html.twig' with { tasks: tasks } %}
+            </section>
+        </div>
     </main>
 
     {# Модал задачи #}
