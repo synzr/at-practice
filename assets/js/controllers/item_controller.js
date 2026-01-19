@@ -70,7 +70,11 @@ export default class extends Controller {
           return;
         }
         if (!flag) {
-          eventBus.emit("task:restored", task);
+          if (statusFilter !== "deleted") {
+            eventBus.emit("task:restored", task);
+          } else {
+            eventBus.emit("task:deleted", task);
+          }
           eventBus.emit("toast:message", 'Задача успешно восстановлена');
 
           return;
