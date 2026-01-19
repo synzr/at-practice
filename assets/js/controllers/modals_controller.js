@@ -42,7 +42,7 @@ export default class extends Controller {
     this.taskFormMode = "create";
 
     // NOTE: открытие модального окна
-    this.openTaskModal();
+    this._openTaskModal();
   }
 
   /**
@@ -78,9 +78,13 @@ export default class extends Controller {
     this.taskFormMode = "update";
 
     // NOTE: открытие модального окна
-    this.openTaskModal();
+    this._openTaskModal();
   }
 
+  /**
+   * Открытие модального окна для удаления
+   * @param {CustomEvent} event Событие удаления задачи
+   */
   openDeleteModal(event) {
     // NOTE: проверка, если модальное окно не было открыто до этого
     if (this.isDeleteModalOpen) {
@@ -96,7 +100,10 @@ export default class extends Controller {
     this.confirmModal.show();
   }
 
-  openTaskModal() {
+  /**
+   * Открытие модального окна для создания/редактирования задачи
+   */
+  _openTaskModal() {
     // NOTE: смена заголовка и текста кнопки
     this.titleTarget.textContent =
       this.constructor.modalTexts[this.taskFormMode].title;
@@ -137,13 +144,14 @@ export default class extends Controller {
    ajaxClient
      .create(this.formTarget)
       .then((task) => {
-        console.log("Задача создана:", task);
         eventBus.emit("task:created", task);
         this.taskModal.hide();
+
+        eventBus.emit("toast:message", 'Задача успешна создана');
       })
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
-        alert("Во время создания задачи произошла ошибка");
+        eventBus.emit("toast:message", "Во время создания задачи произошла ошибка");
       });
   }
 
@@ -172,13 +180,18 @@ export default class extends Controller {
           return;
         }
         eventBus.emit("task:deleted", task);
+
+        eventBus.emit("toast:message", 'Задача успешна редактирована');
       })
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
-        alert("Во время редактирования задачи произошла ошибка");
+        eventBus.emit("toast:message", "Во время редактирования задачи произошла ошибка");
       });
   }
 
+  /**
+   * Обработка удаления задачи.
+   */
   delete() {
     ajaxClient
       .delete(this.deleteFormId)
@@ -191,17 +204,26 @@ export default class extends Controller {
         // NOTE: закрытие модального окна
         this.isDeleteModalOpen = false;
         this.confirmModal.hide();
+
+        eventBus.emit("toast:message", 'Задача успешна бесвозрастно удалена');
       })
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
-        alert("Во время удаления задачи произошла ошибка");
+        eventBus.emit("toast:message", "Во время удаления задачи произошла ошибка");
       });
   }
 
+  /**
+   * Проверка фильтрации по дедлайну.
+   * @param {string} current Текущий дедлайн.
+   * @param {string} from Начальный дедлайн.
+   * @param {string} to Конечный дедлайн.
+   * @returns {boolean} Возможность фильтрации.
+   */
   _shouldBeVisibleByDeadlineFilter(current, from, to) {
     const hasFilter = from || to;
 
-    // If filter exists and task has no deadline → exclude
+    // NOTE: если задача не имеет дедлайна, то возвращаем возможность фильтрации
     if (!current) {
       return !hasFilter;
     }

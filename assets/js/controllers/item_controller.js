@@ -26,8 +26,8 @@ export default class extends Controller {
         eventBus.emit("task:deleted", task);
       })
       .catch((error) => {
-        console.error(error);
-        alert("Ошибка выполнения задачи: ", error.message);
+        console.error('Ошибка выполнения задачи:', error.message);
+        eventBus.emit("toast:message", 'Во время выполнения переключения пометки произошла ошибка');
       });
   }
 
@@ -63,15 +63,23 @@ export default class extends Controller {
           statusFilter !== "all" && statusFilter !== "deleted";
         if (flag && cannotBeDeletedShown) {
           eventBus.emit("task:deleted", task);
+          eventBus.emit("toast:message", 'Задача успешно удалена');
+
+          return;
         }
         if (!flag) {
           eventBus.emit("task:restored", task);
+          eventBus.emit("toast:message", 'Задача успешно восстановлена');
+
+          return;
         }
 
         eventBus.emit("task:removed", task);
+        eventBus.emit("toast:message", 'Задача успешно удалена');
       })
       .catch((error) => {
-        alert("Ошибка удаления задачи: ", error.message);
+        console.error('Ошибка удаления задачи:', error.message);
+        eventBus.emit("toast:message", 'Во время выполнения удаления задачи произошла ошибка');
       });
   }
 }
