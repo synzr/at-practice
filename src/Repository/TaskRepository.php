@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,50 +17,82 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
-    /**
-     * @return Task[] Returns an array of Task objects
-     */
-    public function findSorted(string $sort, string $order): array
+    public function findByCriteria(array $sort, array $filter): array
     {
-        $allowedFields = ['created_at', 'name', 'deadline'];
-        $allowedOrders = ['ASC', 'DESC'];
+        $q = $this->createQueryBuilder('t');
 
-        if (!in_array($sort, $allowedFields, true)) {
-            $sort = 'created_at';
-        }
+        // NOTE: валидация параметров сортировки и фильтрации
+        [$sort, $filter] = $this->validateCriteria($sort, $filter);
 
-        if (!in_array($order, $allowedOrders, true)) {
-            $order = 'DESC';
-        }
+        // NOTE: применения критириев
+        $this->applyCriteria($q, $sort, $filter);
 
-        return $this->createQueryBuilder('t')
-            ->orderBy('t.'.$sort, $order)
-            ->getQuery()
-            ->getResult();
+        return $q->getQuery()->getResult();
     }
 
-    //    /**
-    //     * @return Task[] Returns an array of Task objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    private function validateCriteria(array $sort, array $filter): array
+    {
+        // NOTE: валидация параметров сортировки и фильтрации
+        if (!in_array($sort['field'], ['id', 'created_at', 'deadline'])) {
+            $sort['field'] = 'created_at';
+        }
+        $sort['order'] = strtolower($sort['order']);
+        if (!in_array($sort['order'], ['asc', 'desc'])) {
+            $sort['order'] = 'desc';
+        }
 
-    //    public function findOneBySomeField($value): ?Task
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        // NOTE: валидация параметров фильтрации
+        if (!in_array($filter['status'], ['all', 'active', 'completed', 'deleted'])) {
+            $filter['status'] = 'active';
+        }
+
+        return [$sort, $filter];
+    }
+
+    private function applyCriteria(QueryBuilder $q, array $sort, array $filter): QueryBuilder
+    {
+        // NOTE: применение параметров сортировки
+        $q->orderBy('t.'.$sort['field'], $sort['order']);
+
+        // NOTE: применение параметров фильтрации по статусу
+        switch ($filter['status']) {
+            case 'active':
+                $q
+                    ->andWhere('t.is_deleted = :is_deleted')
+                    ->andWhere('t.is_done = :is_done')
+                    ->setParameter('is_deleted', false)
+                    ->setParameter('is_done', false);
+                break;
+            case 'completed':
+                $q
+                    ->andWhere('t.is_deleted = :is_deleted')
+                    ->andWhere('t.is_done = :is_done')
+                    ->setParameter('is_deleted', false)
+                    ->setParameter('is_done', true);
+                break;
+            case 'deleted':
+                $q
+                    ->andWhere('t.is_deleted = :is_deleted')
+                    ->setParameter('is_deleted', true);
+                break;
+            case 'all':
+            default:
+                // NOTE: показываем все задачи, включая удаленные
+                break;
+        }
+
+        // NOTE: применение параметров фильтрации по дедлайну
+        if ($filter['deadline_from']) {
+            $q
+                ->andWhere('t.deadline >= :deadline_from')
+                ->setParameter('deadline_from', new \DateTime($filter['deadline_from']));
+        }
+        if ($filter['deadline_to']) {
+            $q
+                ->andWhere('t.deadline <= :deadline_to')
+                ->setParameter('deadline_to', new \DateTime($filter['deadline_to']));
+        }
+
+        return $q;
+    }
 }

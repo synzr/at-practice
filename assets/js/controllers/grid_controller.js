@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
-import Masonry from "masonry-layout";
 import eventBus from "../lib/event_bus";
+import Masonry from "masonry-layout";
 
 export default class extends Controller {
   connect() {
@@ -11,6 +11,7 @@ export default class extends Controller {
     eventBus.on("task:removed", this.onTaskUpdated.bind(this))
     eventBus.on("task:deleted", this.onTaskDeleted.bind(this))
     eventBus.on("task:restored", this.onTaskUpdated.bind(this))
+    eventBus.on("grid:updated", this.onGridUpdated.bind(this))
 
     // NOTE: инциализируем Masonry-верстку
     this.grid = new Masonry(this.element, {
@@ -42,12 +43,11 @@ export default class extends Controller {
    * @param {Event} event Событие
    */
   onTaskUpdated(event) {
-    console.debug('event.detail:', event.detail);
     const { html, id } = event.detail;
 
     // NOTE: находим задачу в DOM
     const item = this.element.querySelector(
-      `[data-task-item-id-value="${id}"]`
+      `[data-item-id-value="${id}"]`
     );
     if (!item) {
       console.error("onTaskUpdated(): Измененная задача не найдена в DOM");
@@ -69,7 +69,7 @@ export default class extends Controller {
 
     // NOTE: находим задачу в DOM
     const item = this.element.querySelector(
-      `[data-task-item-id-value="${id}"]`
+      `[data-item-id-value="${id}"]`
     );
     if (!item) {
       console.error("onTaskDeleted(): Удаленная задача не найдена в DOM");
@@ -79,6 +79,21 @@ export default class extends Controller {
     // NOTE: удаляем задачу из Masonry-верстки
     item.remove();
     this.grid.remove(item);
+    this.grid.layout();
+  }
+
+  /**
+   * Событие обновления списка задач
+   * @param {Event} event Событие
+   */
+  onGridUpdated(event) {
+    const html = event.detail;
+
+    // NOTE: обновляем список задач в DOM
+    this.element.innerHTML = html;
+
+    // NOTE: обновляем Masonry-верстку
+    this.grid.reloadItems();
     this.grid.layout();
   }
   // #endregion

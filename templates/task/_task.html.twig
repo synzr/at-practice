@@ -1,13 +1,13 @@
 <div
     class="task-item"
-    data-controller="task-item"
-    data-task-item-id-value="{{ task.id }}"
-    data-task-item-name-value="{{ task.name }}"
+    data-controller="item"
+    data-item-id-value="{{ task.id }}"
+    data-item-name-value="{{ task.name }}"
     {% if task.description %}
-    data-task-item-description-value="{{ task.description }}"
+    data-item-description-value="{{ task.description }}"
     {% endif %}
     {% if task.deadline %}
-    data-task-item-deadline-value="{{ task.deadline|date('c') }}"
+    data-item-deadline-value="{{ task.deadline|date('c') }}"
     {% endif %}
 >
     <div class="card">
@@ -38,17 +38,17 @@
                     {% if not task.isDeleted %}
                     <li>
                         {% if task.isDone %}
-                        <button class="dropdown-item" role="button" data-action="click->task-item#done">
+                        <button class="dropdown-item" role="button" data-action="click->item#done">
                             Отметить как невыполненное
                         </button>
                         {% else %}
-                        <button class="dropdown-item" role="button" data-action="click->task-item#done">
+                        <button class="dropdown-item" role="button" data-action="click->item#done">
                             Отметить как выполненное
                         </button>
                         {% endif %}
                     </li>
                     <li>
-                        <button class="dropdown-item" role="button" data-action="click->task-item#update">
+                        <button class="dropdown-item" role="button" data-action="click->item#update">
                             Редактировать
                         </button>
                     </li>
@@ -58,19 +58,19 @@
 
                     {% if task.isDeleted %}
                     <li>
-                        <button class="dropdown-item" role="button" data-action="click->task-item#restore">
+                        <button class="dropdown-item" role="button" data-action="click->item#restore">
                             Восстановить
                         </button>
                     </li>
                     {% else %}
                     <li>
-                        <button class="dropdown-item" role="button" data-action="click->task-item#remove">
+                        <button class="dropdown-item" role="button" data-action="click->item#remove">
                             Удалить
                         </button>
                     </li>
                     {% endif %}
                     <li>
-                        <button class="dropdown-item" role="button" data-action="click->task-item#delete">
+                        <button class="dropdown-item" role="button" data-action="click->item#delete">
                             Удалить бесвозвратно
                         </button>
                     </li>

@@ -3,55 +3,93 @@
 {% block title %}Список задач{% endblock %}
 
 {% block body %}
-<div data-controller="task-modal">
+<div data-controller="modal">
     <main class="container-sm">
         <section class="container-fluid">
             <h1>Список задач</h1>
         </section>
 
+        {# Фильтры #}
+        <section class="container-fluid mb-3" data-controller="options">
+            <form method="get" id="filter-form" data-options-target="form">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <select name="status" class="form-select" data-action="change->options#filter">
+                            <option value="all"{{ filter.status == 'all' ? ' selected' : '' }}>Все задачи</option>
+                            <option value="active"{{ filter.status == 'active' ? ' selected' : '' }}>Активные</option>
+                            <option value="completed"{{ filter.status == 'completed' ? ' selected' : '' }}>Выполненные</option>
+                            <option value="deleted"{{ filter.status == 'deleted' ? ' selected' : '' }}>Удаленные</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <input
+                            type="date"
+                            name="deadline_from"
+                            class="form-control"
+                            placeholder="От даты"
+                            value="{{ filter.deadline_from }}"
+                            data-action="change->options#filter"
+                        >
+                    </div>
+
+                    <div class="col-md-3">
+                        <input
+                            type="date"
+                            name="deadline_to"
+                            class="form-control"
+                            placeholder="До даты"
+                            value="{{ filter.deadline_to }}"
+                            data-action="change->options#filter"
+                        >
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Сортировка
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="#" data-action="click->options#sort" data-sort-field="created_at" data-sort-order="desc">
+                                        Сначала новые
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" data-action="click->options#sort" data-sort-field="created_at" data-sort-order="asc">
+                                        Сначала старые
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" data-action="click->options#sort" data-sort-field="deadline" data-sort-order="asc">
+                                        Сначала близкие к дедлайну
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
         {# Панель действий #}
-        <section class="container-fluid d-flex flex-row-reverse gap-1">
+        <section class="container-fluid d-flex flex-row-reverse gap-1 mb-3">
             <button
                 class="btn btn-primary"
-                data-action="click->task-modal#openCreateModal"
+                data-action="click->modal#openCreateModal"
             >
                 Добавить задачу
             </button>
-
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Сортировка
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a class="dropdown-item" href="{{ path('task_index') }}">
-                            Сначала новые
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ path('task_index', {sort: 'created_at', order: 'asc'}) }}">
-                            Сначала старые
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ path('task_index', {sort: 'deadline', order: 'asc'}) }}">
-                            Сначала близкие к дедлайну
-                        </a>
-                    </li>
-                </ul>
-            </div>
         </section>
 
-        {# Список задач #}
         <section
             class="container-fluid row"
-            data-controller="task-grid"
-            data-task-modal-target="grid"
+            data-controller="grid"
+            data-modal-target="grid"
         >
-            {% for task in tasks %}
-                {% include 'task/_task.html.twig' with { task: task } %}
-            {% endfor %}
+            {% include 'task/_tasks.html.twig' with { tasks: tasks } %}
         </section>
+
     </main>
 
     {# Модал задачи #}
@@ -59,15 +97,15 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="taskModalLabel" data-task-modal-target="title">Добавить задачу</h5>
+                    <h5 class="modal-title" id="taskModalLabel" data-modal-target="title">Добавить задачу</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 {{ form_start(form, {
                     attr: {
                         id: 'task-form',
-                        'data-task-modal-target': 'form',
-                        'data-action': 'submit->task-modal#submitForm'
+                        'data-modal-target': 'form',
+                        'data-action': 'submit->modal#submitForm'
                     },
                 }) }}
                     <div class="modal-body">
@@ -76,7 +114,7 @@
                         {{ form_row(form.deadline) }}
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" data-task-modal-target="submit">Создать</button>
+                        <button type="submit" class="btn btn-primary" data-modal-target="submit">Создать</button>
                     </div>
                 {{ form_end(form) }}
             </div>

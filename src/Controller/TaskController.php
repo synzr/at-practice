@@ -43,16 +43,37 @@ final class TaskController extends AbstractController
     {
         $form = $this->createForm(TaskType::class);
 
-        // NOTE: получаем параметры сортировки
-        $sort = $request->query->get('sort', 'created_at');
-        $order = strtoupper($request->query->get('order', 'DESC'));
+        // NOTE: получаем параметры сортировки и фильтрации
+        $sort = [
+            'field' => $request->query->get('sort', 'created_at'),
+            'order' => $request->query->get('order', 'desc'),
+        ];
+        $filter = [
+            'status' => $request->query->get('status', 'active'),
+            'deadline_from' => $request->query->get('deadline_from'),
+            'deadline_to' => $request->query->get('deadline_to'),
+        ];
 
-        // NOTE: получаем задачи по параметрам
-        $tasks = $this->taskRepository->findSorted($sort, $order);
+        // NOTE: получаем задачи через репозиторий по критериям
+        $tasks = $this->taskRepository->findByCriteria($sort, $filter);
 
+        if (
+            $request->isXmlHttpRequest() ||
+            'application/json' === $request->headers->get('Accept')
+        ) {
+            // NOTE: возвращаем JSON, если запрос был AJAX
+            return $this->json([
+                'success' => true,
+                'tasks' => $this->renderView('task/_tasks.html.twig', ['tasks' => $tasks]),
+            ]);
+        }
+
+        // NOTE: возвращаем полную страницу, если запрос был обычным
         return $this->render('task/index.html.twig', [
             'form' => $form->createView(),
             'tasks' => $tasks,
+            'sort' => $sort,
+            'filter' => $filter,
         ]);
     }
 
@@ -117,7 +138,7 @@ final class TaskController extends AbstractController
      * Выставить задачу как удаленную или наоборот.
      */
     #[Route('/{id}/deleted', name: 'task_deleted', methods: ['POST'])]
-    public function setDeleted(
+    public function deleted(
         #[MapRequestPayload] SetDeletedDto $dto,
         int $id,
     ): JsonResponse {
@@ -146,6 +167,7 @@ final class TaskController extends AbstractController
             'success' => true,
             'task' => [
                 'id' => $task->getId(),
+                'done' => $task->isDone(),
                 'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
             ],
         ], 200 /* OK */);

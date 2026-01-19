@@ -51,6 +51,26 @@ export class AjaxClient {
 
   // #region Методы
   /**
+   * Получить список задач.
+   *
+   * @param {Object} queryParams Параметры запроса.
+   */
+  async get(queryParams) {
+    // NOTE: преобразуем параметры запроса в строку URL
+    let queryString;
+    if (queryParams instanceof URLSearchParams) {
+      queryString = queryParams.toString();
+    } else {
+      queryString = new URLSearchParams(queryParams).toString();
+    }
+
+    const url = `/?${queryString}`;
+    const response = await this._request(url, 'GET', null, null);
+
+    return response.tasks;
+  }
+
+  /**
    * Создать задачи в списке.
    *
    * @param {HTMLFormElement} form Форма задачи.

@@ -2,6 +2,7 @@
 
 namespace App\Event;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
@@ -24,7 +25,7 @@ class AjaxExceptionEvent
         return $this->exceptionEvent->getThrowable();
     }
 
-    public function getRequest(): \Symfony\Component\HttpFoundation\Request
+    public function getRequest(): Request
     {
         return $this->exceptionEvent->getRequest();
     }

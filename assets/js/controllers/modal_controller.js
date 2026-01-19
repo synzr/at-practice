@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
-import { Modal } from "bootstrap";
 import { AjaxClient } from "../lib/ajax_client";
+import { getFilterOptions } from "../lib/utils";
+import { Modal } from "bootstrap";
 import eventBus from "../lib/event_bus";
 
 export default class extends Controller {
@@ -31,10 +32,10 @@ export default class extends Controller {
   openCreateModal() {
     // NOTE: сброс данных формы
     delete this.formTarget.dataset.id;
+    this.formTarget.reset();
 
     // NOTE: сбор формы и установка URL и режима
     this.formTarget.action = this.createUrlValue;
-    this.formTarget.reset();
     this.formMode = "create";
 
     // NOTE: открытие модального окна
@@ -129,8 +130,20 @@ export default class extends Controller {
     this.ajaxClient
       .update(id, this.formTarget)
       .then((task) => {
-        eventBus.emit("task:updated", task);
         this.modal.hide();
+
+        const filterOptions = getFilterOptions();
+        if (
+          this._shouldBeVisibleByDeadlineFilter(
+            task.deadline,
+            filterOptions.deadline_from,
+            filterOptions.deadline_to
+          )
+        ) {
+          return eventBus.emit("task:updated", task);
+        }
+
+        eventBus.emit("task:deleted", task);
       })
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
@@ -138,4 +151,26 @@ export default class extends Controller {
       });
   }
   // #endregion
+_shouldBeVisibleByDeadlineFilter(current, from, to) {
+  const hasFilter = from || to;
+
+  // If filter exists and task has no deadline → exclude
+  if (!current) {
+    return !hasFilter;
+  }
+
+  const currentDate = new Date(current);
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(to) : null;
+
+  if (fromDate && currentDate < fromDate) {
+    return false;
+  }
+
+  if (toDate && currentDate > toDate) {
+    return false;
+  }
+
+  return true;
+}
 }

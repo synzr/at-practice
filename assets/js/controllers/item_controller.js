@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 import { AjaxClient } from "../lib/ajax_client";
+import { getFilterOptions } from "../lib/utils";
 import eventBus from "../lib/event_bus";
 
 export default class extends Controller {
@@ -19,9 +20,16 @@ export default class extends Controller {
     this.ajaxClient
       .toggleDone(this.idValue)
       .then((task) => {
-        eventBus.emit("task:done", task);
+        const statusFilter = getFilterOptions().status;
+
+        if (statusFilter === 'all' || task.done) {
+          eventBus.emit("task:done", task);
+        }
+
+        eventBus.emit("task:deleted", task);
       })
       .catch((error) => {
+        console.error(error);
         alert("Ошибка выполнения задачи: ", error.message);
       });
   }
@@ -36,7 +44,7 @@ export default class extends Controller {
   }
 
   remove() {
-    this.setDeleted(true);
+    this._setDeleted(true);
   }
 
   delete() {
@@ -51,15 +59,26 @@ export default class extends Controller {
   }
 
   restore() {
-    this.setDeleted(false);
+    this._setDeleted(false);
   }
   // #endregion
 
-  setDeleted(flag) {
+  _setDeleted(flag) {
     this.ajaxClient
       .setDeleted(this.idValue, flag)
       .then((task) => {
-        eventBus.emit(flag ? "task:removed" : "task:restored", task);
+        const statusFilter = getFilterOptions().status;
+
+        const cannotBeDeletedShown =
+          statusFilter !== "all" && statusFilter !== "deleted";
+        if (flag && cannotBeDeletedShown) {
+          eventBus.emit("task:deleted", task);
+        }
+        if (!flag) {
+          eventBus.emit("task:restored", task);
+        }
+
+        eventBus.emit("task:removed", task);
       })
       .catch((error) => {
         alert("Ошибка удаления задачи: ", error.message);
