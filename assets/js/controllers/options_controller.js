@@ -12,23 +12,9 @@ export default class extends Controller {
     );
   }
 
-  filter() {
-    const query = this._getFilterParams();
-    this.update(query)
-  }
-
-  sort(event) {
-    // NOTE: получение параметров из формы фильтрации
+  update() {
     const query = this._getFilterParams();
 
-    // NOTE: установка параметров сортировки
-    query.sort = event.target.dataset.sortField;
-    query.order = event.target.dataset.sortOrder;
-
-    this.update(query);
-  }
-
-  update(query) {
     ajaxClient
       .get(query)
       .then((html) => {

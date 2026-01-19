@@ -15,11 +15,11 @@ export default class extends Controller {
       submitText: "Сохранить",
     },
   };
-  static targets = ["grid", "form", "title", "submit", "confirmSubmit"];
+  static targets = ["grid", "form", "title", "submit", "confirmSubmit", "taskModal", "confirmModal"];
 
   connect() {
-    this.taskModal = new Modal("#taskModal");
-    this.confirmModal = new Modal("#confirmModal");
+    this.taskModal = new Modal(this.taskModalTarget);
+    this.confirmModal = new Modal(this.confirmModalTarget);
 
     eventBus.on("modal:update", this.openUpdateModal.bind(this));
     eventBus.on("modal:delete", this.openDeleteModal.bind(this));
@@ -30,7 +30,7 @@ export default class extends Controller {
    */
   openCreateModal() {
     // NOTE: проверка, если модальное окно не было открыто до этого
-    if (this.isTaskModalOpen) {
+    if (this.taskModalTarget.classList.contains("show")) {
       return;
     }
 
@@ -53,7 +53,7 @@ export default class extends Controller {
     const { id, name, description, deadline } = event.detail;
 
     // NOTE: проверка, если модальное окно не было открыто до этого
-    if (this.isTaskModalOpen) {
+    if (this.taskModalTarget.classList.contains("show")) {
       return;
     }
 
@@ -62,17 +62,9 @@ export default class extends Controller {
 
     form.querySelector('[name="task[name]"]').value = name;
     form.querySelector('[name="task[description]"]').value = description || "";
+    form.querySelector('[name="task[deadline]"]').value = deadline || "";
 
     this.updateFormId = id;
-
-    // NOTE: форматирование даты
-    if (deadline) {
-      const date = new Date(deadline);
-      const formattedDate = date.toISOString().slice(0, 16); // NOTE: YYYY-MM-DDTHH:mm
-      form.querySelector('[name="task[deadline]"]').value = formattedDate;
-    } else {
-      form.querySelector('[name="task[deadline]"]').value = "";
-    }
 
     // NOTE: установка URL и режима для отправки формы
     this.taskFormMode = "update";
@@ -96,7 +88,6 @@ export default class extends Controller {
     this.deleteFormId = id;
 
     // NOTE: открытие модального окна
-    this.isDeleteModalOpen = true;
     this.confirmModal.show();
   }
 
@@ -111,7 +102,6 @@ export default class extends Controller {
       this.constructor.modalTexts[this.taskFormMode].submitText;
 
     // NOTE: открытие модального окна
-    this.isTaskModalOpen = true;
     this.taskModal.show();
   }
 
@@ -132,9 +122,6 @@ export default class extends Controller {
         this.update();
         break;
     }
-
-    // NOTE: сброс флага открытия модального окна
-    this.isTaskModalOpen = false;
   }
 
   /**
@@ -202,7 +189,6 @@ export default class extends Controller {
         });
 
         // NOTE: закрытие модального окна
-        this.isDeleteModalOpen = false;
         this.confirmModal.hide();
 
         eventBus.emit("toast:message", 'Задача успешна бесвозрастно удалена');

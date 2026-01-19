@@ -18,7 +18,7 @@ export default class extends Controller {
       .then((task) => {
         const filterOptions = getFilterOptions();
 
-        if (filterOptions.status === 'all' || task.done) {
+        if (filterOptions.status === 'all' || !task.done) {
           eventBus.emit("task:done", task);
           return;
         }

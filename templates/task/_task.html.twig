@@ -7,7 +7,7 @@
     data-item-description-value="{{ task.description }}"
     {% endif %}
     {% if task.deadline %}
-    data-item-deadline-value="{{ task.deadline|date('c') }}"
+    data-item-deadline-value="{{ task.deadline|date('Y-m-d') }}"
     {% endif %}
 >
     <div class="card">

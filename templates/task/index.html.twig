@@ -14,7 +14,7 @@
             <form method="get" id="filter-form" data-options-target="form">
                 <div class="row g-2">
                     <div class="col-md-3">
-                        <select name="status" class="form-select" data-action="change->options#filter">
+                        <select name="status" class="form-select" data-action="change->options#update">
                             <option value="all"{{ filter.status == 'all' ? ' selected' : '' }}>Все задачи</option>
                             <option value="active"{{ filter.status == 'active' ? ' selected' : '' }}>Активные</option>
                             <option value="completed"{{ filter.status == 'completed' ? ' selected' : '' }}>Выполненные</option>
@@ -22,51 +22,41 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <input
                             type="date"
                             name="deadline_from"
                             class="form-control"
                             placeholder="От даты"
                             value="{{ filter.deadline_from }}"
-                            data-action="change->options#filter"
+                            data-action="change->options#update"
                         >
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <input
                             type="date"
                             name="deadline_to"
                             class="form-control"
                             placeholder="До даты"
                             value="{{ filter.deadline_to }}"
-                            data-action="change->options#filter"
+                            data-action="change->options#update"
                         >
                     </div>
 
+                    <div class="col-md-2">
+                        <select name="sort" class="form-select" data-action="change->options#update">
+                            <option value="all"{{ sort.field == 'id' ? ' selected' : '' }}>По идентификатору</option>
+                            <option value="created_at"{{ sort.field == 'created_at' ? ' selected' : '' }}>По дате создания</option>
+                            <option value="deadline"{{ sort.field == 'deadline' ? ' selected' : '' }}>По дедлайну</option>
+                        </select>
+                    </div>
+
                     <div class="col-md-3">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Сортировка
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="#" data-action="click->options#sort" data-sort-field="created_at" data-sort-order="desc">
-                                        Сначала новые
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" data-action="click->options#sort" data-sort-field="created_at" data-sort-order="asc">
-                                        Сначала старые
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" data-action="click->options#sort" data-sort-field="deadline" data-sort-order="asc">
-                                        Сначала близкие к дедлайну
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                        <select name="order" class="form-select" data-action="change->options#update">
+                            <option value="asc"{{ sort.order == 'asc' ? ' selected' : '' }}>По возрастанию</option>
+                            <option value="desc"{{ sort.order == 'desc' ? ' selected' : '' }}>По убыванию</option>
+                        </select>
                     </div>
                 </div>
             </form>
@@ -93,7 +83,7 @@
     </main>
 
     {# Модал задачи #}
-    <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal fade" data-modals-target="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -122,7 +112,7 @@
     </div>
 
     {# Модал подтверждения #}
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" data-controller="confirm-delete">
+    <div class="modal fade" data-modals-target="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" data-controller="confirm-delete">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
