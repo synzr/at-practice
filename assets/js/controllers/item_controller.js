@@ -16,10 +16,11 @@ export default class extends Controller {
     ajaxClient
       .toggleDone(this.idValue)
       .then((task) => {
-        const statusFilter = getFilterOptions().status;
+        const filterOptions = getFilterOptions();
 
-        if (statusFilter === 'all' || task.done) {
+        if (filterOptions.status === 'all' || task.done) {
           eventBus.emit("task:done", task);
+          return;
         }
 
         eventBus.emit("task:deleted", task);

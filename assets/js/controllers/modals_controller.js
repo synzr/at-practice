@@ -29,6 +29,11 @@ export default class extends Controller {
    * Открытие модального окна для создания
    */
   openCreateModal() {
+    // NOTE: проверка, если модальное окно не было открыто до этого
+    if (this.isTaskModalOpen) {
+      return;
+    }
+
     // NOTE: сброс данных формы
     this.formTarget.reset();
 
@@ -46,6 +51,11 @@ export default class extends Controller {
    */
   openUpdateModal(event) {
     const { id, name, description, deadline } = event.detail;
+
+    // NOTE: проверка, если модальное окно не было открыто до этого
+    if (this.isTaskModalOpen) {
+      return;
+    }
 
     // NOTE: заполнение формы
     const form = this.formTarget;
@@ -72,9 +82,17 @@ export default class extends Controller {
   }
 
   openDeleteModal(event) {
-    // NOTE: записание id задачи в дата-атрибут
+    // NOTE: проверка, если модальное окно не было открыто до этого
+    if (this.isDeleteModalOpen) {
+      return;
+    }
+
+    // NOTE: записание id задачи
     const { id } = event.detail;
     this.deleteFormId = id;
+
+    // NOTE: открытие модального окна
+    this.isDeleteModalOpen = true;
     this.confirmModal.show();
   }
 
@@ -86,6 +104,7 @@ export default class extends Controller {
       this.constructor.modalTexts[this.taskFormMode].submitText;
 
     // NOTE: открытие модального окна
+    this.isTaskModalOpen = true;
     this.taskModal.show();
   }
 
@@ -106,6 +125,9 @@ export default class extends Controller {
         this.update();
         break;
     }
+
+    // NOTE: сброс флага открытия модального окна
+    this.isTaskModalOpen = false;
   }
 
   /**
@@ -137,6 +159,7 @@ export default class extends Controller {
       .then((task) => {
         this.taskModal.hide();
 
+        // NOTE: отправка события в зависимости от фильтров
         const filterOptions = getFilterOptions();
         if (
           this._shouldBeVisibleByDeadlineFilter(
@@ -145,9 +168,9 @@ export default class extends Controller {
             filterOptions.deadline_to
           )
         ) {
-          return eventBus.emit("task:updated", task);
+          eventBus.emit("task:updated", task);
+          return;
         }
-
         eventBus.emit("task:deleted", task);
       })
       .catch((error) => {
@@ -160,10 +183,13 @@ export default class extends Controller {
     ajaxClient
       .delete(this.deleteFormId)
       .then(() => {
+        // NOTE: отправка события удаления задачи
         eventBus.emit("task:deleted", {
           id: this.deleteFormId,
         });
 
+        // NOTE: закрытие модального окна
+        this.isDeleteModalOpen = false;
         this.confirmModal.hide();
       })
       .catch((error) => {
