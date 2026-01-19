@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\DeleteOrRestoreDto;
+use App\Dto\SetDeletedDto;
 use App\Dto\TaskDto;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
@@ -71,7 +71,7 @@ final class TaskController extends AbstractController
         }
 
         // NOTE: создаем новую задачу через сервис
-        $task = $this->taskService->createTask($form->getData());
+        $task = $this->taskService->create($form->getData());
 
         return $this->json([
             'success' => true,
@@ -90,10 +90,7 @@ final class TaskController extends AbstractController
         }
 
         // NOTE: обновляем задачу через сервис
-        $this->taskService->updateTask($id, $form->getData());
-
-        // NOTE: получаем обновленную задачу из базы данных
-        $task = $this->taskRepository->find($id);
+        $task = $this->taskService->update($id, $form->getData());
 
         return $this->json([
             'success' => true,
@@ -110,24 +107,22 @@ final class TaskController extends AbstractController
     #[Route('/{id}', name: 'task_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
-        $this->taskService->fullDeleteTask($id);
+        $this->taskService->delete($id); // NOTE: удаляем задачу из базы данных
 
         return $this->json(['success' => true], 200 /* OK */);
     }
     // #endregion
 
     /**
-     * Удалить (по флагу) или восстановить задачу.
+     * Выставить задачу как удаленную или наоборот.
      */
-    #[Route('/{id}/delete-or-restore', name: 'task_delete_or_restore', methods: ['POST'])]
-    public function deleteOrRestore(
-        #[MapRequestPayload] DeleteOrRestoreDto $dto,
+    #[Route('/{id}/deleted', name: 'task_deleted', methods: ['POST'])]
+    public function setDeleted(
+        #[MapRequestPayload] SetDeletedDto $dto,
         int $id,
     ): JsonResponse {
-        $this->taskService->deleteOrRestoreTask($id, $dto->flag);
-
-        // Получаем обновленную задачу из базы данных
-        $task = $this->taskRepository->find($id);
+        // NOTE: выставляем задаче флаг удаления
+        $task = $this->taskService->setDeleted($id, $dto->flag);
 
         return $this->json([
             'success' => true,
@@ -139,12 +134,13 @@ final class TaskController extends AbstractController
     }
 
     /**
-     * Пометить задачу как выполненную или наоборот.
+     * Переключить флаг выполнения задачи.
      */
     #[Route('/{id}/done', name: 'task_done', methods: ['POST'])]
     public function done(int $id): JsonResponse
     {
-        $task = $this->taskService->flipDone($id);
+        // NOTE: переключаем флаг выполнения задачи
+        $task = $this->taskService->toggleDone($id);
 
         return $this->json([
             'success' => true,

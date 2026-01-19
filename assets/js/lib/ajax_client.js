@@ -10,7 +10,7 @@ export class AjaxClient {
    * @returns {Promise<any>} Результат запроса.
    */
   async _request(url, method, type, body) {
-    // NOTE: Сборка и отправка запроса
+    // NOTE: сборка и отправка запроса
     const request = {
       headers: {
         Accept: 'application/json',
@@ -19,6 +19,7 @@ export class AjaxClient {
       method,
     };
 
+    // NOTE: обработка тело запроса перед отправкой
     switch (type) {
       case 'json':
         request.headers['Content-Type'] = 'application/json';
@@ -30,21 +31,21 @@ export class AjaxClient {
         break;
     }
 
+    // NOTE: отправка запроса
     const response = await fetch(url, request);
 
-    // NOTE: Обработка ответа
+    // NOTE: обработка тела ответа
     let data;
     try {
       data = await response.json();
     } catch (error) {
-      throw new Error('Failed to parse JSON', { cause: error });
+      throw new Error('Не удалось разобрать JSON', { cause: error });
     }
-
     if (!data.success) {
-      throw new Error('Failed to request');
+      throw new Error('Не удалось выполнить запрос');
     }
 
-    // NOTE: Возвращаем данные (без success)
+    // NOTE: возвращаем данные (без success)
     return { ...data, success: undefined };
   }
 
@@ -56,7 +57,7 @@ export class AjaxClient {
    *
    * @returns {string} HTML-код новосозданной задачи.
    */
-  async createTask(form) {
+  async create(form) {
     const response = await this._request(
       '/', 'POST', 'form', form
     );
@@ -71,7 +72,7 @@ export class AjaxClient {
    *
    * @returns {Object} Объект с идентификатором и HTML-код задачи.
    */
-  async updateTask(id, form) {
+  async update(id, form) {
     const response = await this._request(
       `/${id}`, 'POST', 'form', form
     );
@@ -83,33 +84,33 @@ export class AjaxClient {
    *
    * @param {Number} id Идентификатор задачи.
    */
-  async fullDeleteTask(id) {
+  async delete(id) {
     await this._request(`/${id}`, 'DELETE');
   }
 
   /**
-   * Удалить или восстановить задачу из списка.
+   * Выставить задачу как удаленную или наоборот.
    *
    * @param {String} id Идентификатор задачи.
    * @param {Boolean} flag Флаг удаления или восстановления.
    *
    * @returns {Object} Объект с идентификатором и HTML-код задачи.
    */
-  async deleteOrRestoreTask(id, flag) {
+  async setDeleted(id, flag) {
     const response = await this._request(
-      `/${id}/delete-or-restore`, 'POST', 'json', { flag }
+      `/${id}/deleted`, 'POST', 'json', { flag }
     );
     return response.task;
   }
 
   /**
-   * Пометить задачу как выполненную или наоборот.
+   * Переключить флаг выполнения задачи.
    *
    * @param {Number} id Идентификатор задачи.
    *
    * @returns {Object} Объект с идентификатором и HTML-код задачи.
    */
-  async flipTaskDone(id) {
+  async toggleDone(id) {
     const response = await this._request(`/${id}/done`, 'POST');
     return response.task;
   }

@@ -36,7 +36,7 @@ class TaskService
      *
      * @return Task Созданная задача
      */
-    public function createTask(TaskDto $taskDto): Task
+    public function create(TaskDto $taskDto): Task
     {
         return $this->saveTask(null, $taskDto);
     }
@@ -45,22 +45,26 @@ class TaskService
      * Обновить задачу в базе данных.
      *
      * @param int     $taskId  Идентификатор задачи
-     * @param TaskDto $taskDto Данные для обновления задачи
+     * @param TaskDto $taskDto Данные для обновления задач
+     *
+     * @return Task Обновленная задача
      *
      * @throws EntityNotFoundException   Если задача не найдена
      * @throws \InvalidArgumentException Если задача удалена
      */
-    public function updateTask(int $taskId, TaskDto $taskDto): void
+    public function update(int $taskId, TaskDto $taskDto): Task
     {
         $task = $this->taskRepository->find($taskId);
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
+            throw new EntityNotFoundException('Задача не найдена с ID: '.$taskId);
         }
         if ($task->isDeleted()) {
-            throw new \InvalidArgumentException('Cannot update deleted task');
+            throw new \InvalidArgumentException('Невозможно обновить удаленную задачу');
         }
 
         $this->saveTask($task, $taskDto);
+
+        return $task;
     }
 
     /**
@@ -98,14 +102,14 @@ class TaskService
      * @throws EntityNotFoundException   Если задача не найдена
      * @throws \InvalidArgumentException Если задача удалена
      */
-    public function flipDone(int $taskId): Task
+    public function toggleDone(int $taskId): Task
     {
         $task = $this->taskRepository->find($taskId);
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
+            throw new EntityNotFoundException('Задача не найдена с ID: '.$taskId);
         }
         if ($task->isDeleted()) {
-            throw new \InvalidArgumentException('Cannot flip done status for deleted task');
+            throw new \InvalidArgumentException('Невозможно изменить статус выполнения для удаленной задачи');
         }
 
         $task->setIsDone(!$task->isDone());
@@ -121,11 +125,11 @@ class TaskService
      *
      * @throws EntityNotFoundException Если задача не найдена
      */
-    public function fullDeleteTask(int $taskId): void
+    public function delete(int $taskId): void
     {
         $task = $this->taskRepository->find($taskId);
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
+            throw new EntityNotFoundException('Задача не найдена с ID: '.$taskId);
         }
 
         $this->entityManager->remove($task);
@@ -138,20 +142,24 @@ class TaskService
      * @param int  $taskId     Идентификатор задачи
      * @param bool $deleteFlag Флаг удаления (true для удаления, false для восстановления)
      *
+     * @return Task Обновленная задача
+     *
      * @throws EntityNotFoundException   Если задача не найдена
      * @throws \InvalidArgumentException Если задача уже в нужном состоянии
      */
-    public function deleteOrRestoreTask(int $taskId, bool $deleteFlag): void
+    public function setDeleted(int $taskId, bool $deleteFlag): Task
     {
         $task = $this->taskRepository->find($taskId);
         if (!$task) {
-            throw new EntityNotFoundException('Task not found with ID: '.$taskId);
+            throw new EntityNotFoundException('Задача не найдена с ID: '.$taskId);
         }
         if ($task->isDeleted() === $deleteFlag) {
-            throw new \InvalidArgumentException($deleteFlag ? 'Task is already deleted' : 'Task is not deleted');
+            throw new \InvalidArgumentException($deleteFlag ? 'Задача уже удалена' : 'Задача не удалена');
         }
 
         $task->setIsDeleted($deleteFlag);
         $this->entityManager->flush();
+
+        return $task;
     }
 }

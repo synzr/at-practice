@@ -8,9 +8,9 @@ export default class extends Controller {
     eventBus.on("task:created", this.onTaskCreated.bind(this))
     eventBus.on("task:updated", this.onTaskUpdated.bind(this))
     eventBus.on("task:done", this.onTaskUpdated.bind(this))
-    eventBus.on("task:soft-delete", this.onTaskUpdated.bind(this))
-    eventBus.on("task:full-delete", this.onTaskDeleted.bind(this))
-    eventBus.on("task:restore", this.onTaskUpdated.bind(this))
+    eventBus.on("task:removed", this.onTaskUpdated.bind(this))
+    eventBus.on("task:deleted", this.onTaskDeleted.bind(this))
+    eventBus.on("task:restored", this.onTaskUpdated.bind(this))
 
     // NOTE: инциализируем Masonry-верстку
     this.grid = new Masonry(this.element, {
@@ -50,7 +50,7 @@ export default class extends Controller {
       `[data-task-item-id-value="${id}"]`
     );
     if (!item) {
-      console.error("onTaskUpdated(): Changed task not found in DOM");
+      console.error("onTaskUpdated(): Измененная задача не найдена в DOM");
       return;
     }
 
@@ -72,7 +72,7 @@ export default class extends Controller {
       `[data-task-item-id-value="${id}"]`
     );
     if (!item) {
-      console.error("onTaskDeleted(): Deleted task not found in DOM");
+      console.error("onTaskDeleted(): Удаленная задача не найдена в DOM");
       return;
     }
 

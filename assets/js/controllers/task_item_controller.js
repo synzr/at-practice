@@ -8,7 +8,6 @@ export default class extends Controller {
     name: String,
     description: String,
     deadline: String,
-    editUrl: String,
   };
 
   initialize() {
@@ -18,7 +17,7 @@ export default class extends Controller {
   // #region Действия
   done() {
     this.ajaxClient
-      .flipTaskDone(this.idValue)
+      .toggleDone(this.idValue)
       .then((task) => {
         eventBus.emit("task:done", task);
       })
@@ -27,25 +26,24 @@ export default class extends Controller {
       });
   }
 
-  edit() {
-    eventBus.emit("task:edit", {
+  update() {
+    eventBus.emit("modal:update", {
       id: this.idValue,
       name: this.nameValue,
       description: this.descriptionValue,
       deadline: this.deadlineValue,
-      editUrl: this.editUrlValue,
     });
   }
 
-  delete() {
-    this.deleteOrRestore(true);
+  remove() {
+    this.setDeleted(true);
   }
 
-  fullDelete() {
+  delete() {
     this.ajaxClient
-      .fullDeleteTask(this.idValue)
+      .delete(this.idValue)
       .then(() => {
-        eventBus.emit("task:full-delete", { id: this.idValue });
+        eventBus.emit("task:deleted", { id: this.idValue });
       })
       .catch((error) => {
         alert("Ошибка удаления задачи: ", error.message);
@@ -53,15 +51,15 @@ export default class extends Controller {
   }
 
   restore() {
-    this.deleteOrRestore(false);
+    this.setDeleted(false);
   }
   // #endregion
 
-  deleteOrRestore(flag) {
+  setDeleted(flag) {
     this.ajaxClient
-      .deleteOrRestoreTask(this.idValue, flag)
+      .setDeleted(this.idValue, flag)
       .then((task) => {
-        eventBus.emit(flag ? "task:soft-delete" : "task:restore", task);
+        eventBus.emit(flag ? "task:removed" : "task:restored", task);
       })
       .catch((error) => {
         alert("Ошибка удаления задачи: ", error.message);

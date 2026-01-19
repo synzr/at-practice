@@ -17,21 +17,24 @@ class AjaxExceptionListener
     {
         $ajaxEvent = new AjaxExceptionEvent($event);
 
-        // Only handle AJAX requests
+        // NOTE: обрабатываем только AJAX-запросы
         if (!$ajaxEvent->isAjaxRequest()) {
             return;
         }
 
         $exception = $ajaxEvent->getException();
 
-        // Handle specific exception types
+        // NOTE: обрабатываем конкретные типы исключений
         if ($exception instanceof EntityNotFoundException) {
-            $ajaxEvent->setNotFoundResponse('Task not found');
+            $ajaxEvent->setNotFoundResponse('Не найдено');
 
             return;
         }
 
-        if ($exception instanceof BadRequestException || $exception instanceof \InvalidArgumentException) {
+        if (
+            $exception instanceof BadRequestException
+            || $exception instanceof \InvalidArgumentException
+        ) {
             $ajaxEvent->setBadRequestResponse($exception->getMessage());
 
             return;
@@ -40,13 +43,13 @@ class AjaxExceptionListener
         if ($exception instanceof AccessDeniedException) {
             $ajaxEvent->setJsonResponse([
                 'success' => false,
-                'message' => 'Access denied',
+                'message' => 'Доступ запрещен',
             ], 403);
 
             return;
         }
 
-        // Handle HTTP exceptions
+        // NOTE: обрабатываем HTTP-исключения
         if ($exception instanceof HttpExceptionInterface) {
             $ajaxEvent->setJsonResponse([
                 'success' => false,
@@ -56,7 +59,7 @@ class AjaxExceptionListener
             return;
         }
 
-        // Handle all other exceptions
-        $ajaxEvent->setInternalServerErrorResponse('Failed to process request');
+        // NOTE: обрабатываем все остальные исключения
+        $ajaxEvent->setInternalServerErrorResponse('Внутренняя ошибка сервера');
     }
 }

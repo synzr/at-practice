@@ -35,13 +35,16 @@ class AjaxExceptionEvent
                || 'application/json' === $this->getRequest()->headers->get('Accept');
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function setJsonResponse(array $data, int $statusCode = 500): void
     {
         $response = new JsonResponse($data, $statusCode);
         $this->exceptionEvent->setResponse($response);
     }
 
-    public function setNotFoundResponse(string $message = 'Not Found'): void
+    public function setNotFoundResponse(string $message = 'Не найдено'): void
     {
         $this->setJsonResponse([
             'success' => false,
@@ -49,7 +52,7 @@ class AjaxExceptionEvent
         ], 404);
     }
 
-    public function setBadRequestResponse(string $message = 'Bad Request'): void
+    public function setBadRequestResponse(string $message = 'Неверный запрос'): void
     {
         $this->setJsonResponse([
             'success' => false,
@@ -57,7 +60,7 @@ class AjaxExceptionEvent
         ], 400);
     }
 
-    public function setInternalServerErrorResponse(string $message = 'Internal Server Error'): void
+    public function setInternalServerErrorResponse(string $message = 'Внутренняя ошибка сервера'): void
     {
         $this->setJsonResponse([
             'success' => false,

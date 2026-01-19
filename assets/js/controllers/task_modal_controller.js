@@ -14,11 +14,7 @@ export default class extends Controller {
       submitText: "Сохранить",
     },
   };
-
   static targets = ["grid", "form", "title", "submit"];
-  static values = {
-    createUrl: String,
-  };
 
   initialize() {
     this.ajaxClient = new AjaxClient();
@@ -26,7 +22,7 @@ export default class extends Controller {
 
   connect() {
     this.modal = new Modal("#taskModal");
-    eventBus.on("task:edit", this.openEditModal.bind(this));
+    eventBus.on("modal:update", this.openEditModal.bind(this));
   }
 
   /**
@@ -70,7 +66,6 @@ export default class extends Controller {
     }
 
     // NOTE: установка URL и режима для отправки формы
-    form.action = event.detail.editUrl;
     this.formMode = "update";
 
     // NOTE: открытие модального окна
@@ -98,11 +93,11 @@ export default class extends Controller {
 
     switch (this.formMode) {
       case "create":
-        this.createTask();
+        this.create();
         break;
 
       case "update":
-        this.updateTask();
+        this.update();
         break;
     }
   }
@@ -110,16 +105,16 @@ export default class extends Controller {
   /**
    * Обработка создания задачи.
    */
-  createTask() {
-    this.ajaxClient
-      .createTask(this.id, this.formTarget)
+  create() {
+   this.ajaxClient
+     .create(this.formTarget)
       .then((task) => {
-        console.log("Task created:", task);
+        console.log("Задача создана:", task);
         eventBus.emit("task:created", task);
         this.modal.hide();
       })
       .catch((error) => {
-        console.error("Task request error:", error);
+        console.error("Ошибка запроса задачи:", error);
         alert("Во время создания задачи произошла ошибка");
       });
   }
@@ -127,17 +122,18 @@ export default class extends Controller {
   /**
    * Обработка редактирования задачи.
    */
-  updateTask() {
+  update() {
     // NOTE: получение ID задачи
     const id = parseInt(this.formTarget.dataset.id, 10);
 
-    this.ajaxClient.updateTask(id, this.formTarget)
+    this.ajaxClient
+      .update(id, this.formTarget)
       .then((task) => {
         eventBus.emit("task:updated", task);
         this.modal.hide();
       })
       .catch((error) => {
-        console.error("Task request error:", error);
+        console.error("Ошибка запроса задачи:", error);
         alert("Во время редактирования задачи произошла ошибка");
       });
   }

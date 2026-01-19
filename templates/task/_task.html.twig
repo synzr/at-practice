@@ -9,10 +9,6 @@
     {% if task.deadline %}
     data-task-item-deadline-value="{{ task.deadline|date('c') }}"
     {% endif %}
-    data-task-item-done-url-value="{{ path('task_done', {id: task.id}) }}"
-    data-task-item-edit-url-value="{{ path('task_update', {id: task.id}) }}"
-    data-task-item-full-delete-url-value="{{ path('task_delete', {id: task.id}) }}"
-    data-task-item-delete-or-restore-url-value="{{ path('task_delete_or_restore', {id: task.id}) }}"
 >
     <div class="card">
         <div class="card-body">
@@ -52,7 +48,7 @@
                         {% endif %}
                     </li>
                     <li>
-                        <button class="dropdown-item" role="button" data-action="click->task-item#edit">
+                        <button class="dropdown-item" role="button" data-action="click->task-item#update">
                             Редактировать
                         </button>
                     </li>
@@ -68,13 +64,13 @@
                     </li>
                     {% else %}
                     <li>
-                        <button class="dropdown-item" role="button" data-action="click->task-item#delete">
+                        <button class="dropdown-item" role="button" data-action="click->task-item#remove">
                             Удалить
                         </button>
                     </li>
                     {% endif %}
                     <li>
-                        <button class="dropdown-item" role="button" data-action="click->task-item#fullDelete">
+                        <button class="dropdown-item" role="button" data-action="click->task-item#delete">
                             Удалить бесвозвратно
                         </button>
                     </li>
