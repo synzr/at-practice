@@ -18,12 +18,14 @@ export default class extends Controller {
       .then((task) => {
         const filterOptions = getFilterOptions();
 
-        if (filterOptions.status === 'all' || !task.done) {
-          eventBus.emit("task:done", task);
-          return;
+        if (
+          (filterOptions.status === 'completed' && !task.done) ||
+          (filterOptions.status === 'active' && task.done)
+        ) {
+          eventBus.emit("task:deleted", task);
         }
 
-        eventBus.emit("task:deleted", task);
+        eventBus.emit("task:done", task);
       })
       .catch((error) => {
         console.error('Ошибка выполнения задачи:', error.message);

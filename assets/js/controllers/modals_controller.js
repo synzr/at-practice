@@ -65,8 +65,6 @@ export default class extends Controller {
     form.querySelector('[name="task[deadline]"]').value = deadline || "";
 
     this.updateFormId = id;
-
-    // NOTE: установка URL и режима для отправки формы
     this.taskFormMode = "update";
 
     // NOTE: открытие модального окна
