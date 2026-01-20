@@ -30,14 +30,21 @@ npm install
 npm run dev # NOTE: npm run build для production-сборки
 ```
 
-2. Создайте базу данных и примените миграции 
+3. Создайте файл .env.local и заполните его данными для подключения к базе данных
+
+```bash
+DATABASE_URL="mysql://user:password@localhost:3306/database?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
+# DATABASE_URL="mysql://user:password@localhost:3306/database?serverVersion=8.0.32&charset=utf8mb4"
+```
+
+4. Создайте базу данных и примените миграции 
 
 ```bash
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
 ```
 
-4. Запустите Symfony сервер
+5. Запустите Symfony сервер
 
 ```bash
 symfony serve
