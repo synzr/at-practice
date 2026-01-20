@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus";
 import { getFilterOptions } from "../lib/utils";
 import ajaxClient from "../lib/ajax_client";
 import eventBus from "../lib/event_bus";
+import { InternalServerErrorException, NotFoundException } from "../lib/errors";
 
 export default class extends Controller {
   static values = {
@@ -28,8 +29,17 @@ export default class extends Controller {
         eventBus.emit("task:done", task);
       })
       .catch((error) => {
-        console.error('Ошибка выполнения задачи:', error.message);
-        eventBus.emit("toast:message", 'Во время выполнения переключения пометки произошла ошибка');
+        console.error('Ошибка переключения пометки:', error.message);
+
+        if (error instanceof NotFoundException) {
+          eventBus.emit("toast:message", "Задача не найдена на сервере, попробуйте перезагрузить страницу");
+          return;
+        }
+
+        if (error instanceof InternalServerErrorException) {
+          eventBus.emit("toast:message", "Внутренняя ошибка сервера, попробуйте позже");
+          return;
+        }
       });
   }
 
@@ -85,7 +95,16 @@ export default class extends Controller {
       })
       .catch((error) => {
         console.error('Ошибка удаления задачи:', error.message);
-        eventBus.emit("toast:message", 'Во время выполнения удаления задачи произошла ошибка');
+
+        if (error instanceof NotFoundException) {
+          eventBus.emit("toast:message", "Задача не найдена на сервере, попробуйте перезагрузить страницу");
+          return;
+        }
+
+        if (error instanceof InternalServerErrorException) {
+          eventBus.emit("toast:message", "Внутренняя ошибка сервера, попробуйте позже");
+          return;
+        }
       });
   }
 }

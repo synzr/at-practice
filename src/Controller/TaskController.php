@@ -5,9 +5,11 @@ namespace App\Controller;
 use App\Dto\SetDeletedDto;
 use App\Dto\TaskDto;
 use App\Form\TaskType;
+use App\Entity\Task;
 use App\Repository\TaskRepository;
 use App\Service\TaskService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,8 +60,8 @@ final class TaskController extends AbstractController
         $tasks = $this->taskRepository->findByCriteria($sort, $filter);
 
         if (
-            $request->isXmlHttpRequest() ||
-            'application/json' === $request->headers->get('Accept')
+            $request->isXmlHttpRequest()
+            || 'application/json' === $request->headers->get('Accept')
         ) {
             // NOTE: возвращаем JSON, если запрос был AJAX
             return $this->json([
@@ -86,18 +88,14 @@ final class TaskController extends AbstractController
         $form = $this->createForm(TaskType::class, new TaskDto());
         $form->handleRequest($request);
 
-        // NOTE: возвращаем ошибку, если форма не заполнена или не валидна
         if (!$form->isSubmitted() || !$form->isValid()) {
-            return $this->json(['success' => false], 400 /* Bad Request */);
+            return $this->sendUnprocessableEntityResponse($form);
         }
 
         // NOTE: создаем новую задачу через сервис
         $task = $this->taskService->create($form->getData());
 
-        return $this->json([
-            'success' => true,
-            'task' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-        ], 201 /* Created */);
+        return $this->sendPartialTaskResponse($task, 201 /* Created */, false);
     }
 
     #[Route('/{id}', name: 'task_update', methods: ['POST'])]
@@ -107,19 +105,13 @@ final class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if (!$form->isSubmitted() || !$form->isValid()) {
-            return $this->json(['success' => false], 400 /* Bad Request */);
+            return $this->sendUnprocessableEntityResponse($form);
         }
 
         // NOTE: обновляем задачу через сервис
         $task = $this->taskService->update($id, $form->getData());
 
-        return $this->json([
-            'success' => true,
-            'task' => [
-                'id' => $task->getId(),
-                'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-            ],
-        ], 202 /* Accepted */);
+        return $this->sendPartialTaskResponse($task, 202 /* Accepted */, true);
     }
 
     /**
@@ -145,13 +137,7 @@ final class TaskController extends AbstractController
         // NOTE: выставляем задаче флаг удаления
         $task = $this->taskService->setDeleted($id, $dto->flag);
 
-        return $this->json([
-            'success' => true,
-            'task' => [
-                'id' => $task->getId(),
-                'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-            ],
-        ], 200 /* OK */);
+        return $this->sendPartialTaskResponse($task, 202 /* Accepted */);
     }
 
     /**
@@ -163,13 +149,40 @@ final class TaskController extends AbstractController
         // NOTE: переключаем флаг выполнения задачи
         $task = $this->taskService->toggleDone($id);
 
-        return $this->json([
-            'success' => true,
-            'task' => [
-                'id' => $task->getId(),
-                'done' => $task->isDone(),
-                'html' => $this->renderView('task/_task.html.twig', ['task' => $task]),
-            ],
-        ], 200 /* OK */);
+        return $this->sendPartialTaskResponse($task, 202 /* Accepted */, true, true);
     }
+
+    // #region Вспомогательные методы
+    private function sendUnprocessableEntityResponse(FormInterface $form): JsonResponse
+    {
+        $errors = [];
+
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        return $this->json([
+            'success' => false,
+            'errors' => $errors,
+        ], 422 /* Unprocessable Entity */);
+    }
+
+    private function sendPartialTaskResponse(
+        Task $task,
+        int $statusCode,
+        bool $includeId = true,
+        bool $includeDone = false
+    ): JsonResponse
+    {
+        $data = $this->renderView('task/_task.html.twig', ['task' => $task]);
+        if ($includeId) {
+            $data = ['id' => $task->getId(), 'html' => $data];
+        }
+        if ($includeDone) {
+            $data['done'] = $task->isDone();
+        }
+
+        return $this->json(['success' => true, 'task' => $data], $statusCode);
+    }
+    // #endregion
 }

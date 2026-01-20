@@ -1,3 +1,10 @@
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  UnprocessableEntityException,
+  NotFoundException
+} from "./errors";
+
 export class AjaxClient {
   /**
    * AJAX-запрос к серверу.
@@ -42,7 +49,25 @@ export class AjaxClient {
       throw new Error('Не удалось разобрать JSON', { cause: error });
     }
     if (!data.success) {
-      throw new Error('Не удалось выполнить запрос');
+      switch (response.status) {
+        case 400:
+          throw new BadRequestException(data.message ?? 'Неверный запрос');
+
+        case 404:
+          throw new NotFoundException(data.message ?? 'Не найдено');
+
+        case 422:
+          throw new UnprocessableEntityException(
+            data.message ?? 'Неверные данные',
+            data.errors ?? []
+          );
+
+        case 500:
+          throw new InternalServerErrorException(data.message ?? 'Ошибка сервера');
+
+        default:
+          throw new Error(data.message ?? 'Неизвестная ошибка сервера');
+      }
     }
 
     // NOTE: возвращаем данные (без success)

@@ -3,6 +3,7 @@ import { getFilterOptions } from "../lib/utils";
 import ajaxClient from "../lib/ajax_client";
 import eventBus from "../lib/event_bus";
 import { Modal } from "bootstrap";
+import { BadRequestException, InternalServerErrorException, NotFoundException, UnprocessableEntityException } from "../lib/errors";
 
 export default class extends Controller {
   static modalTexts = {
@@ -23,6 +24,12 @@ export default class extends Controller {
 
     eventBus.on("modal:update", this.openUpdateModal.bind(this));
     eventBus.on("modal:delete", this.openDeleteModal.bind(this));
+
+    this.taskModalTarget.addEventListener("hidden.bs.modal", () => {
+      if (this.taskFormMode === "update") {
+        this.formTarget.reset();
+      }
+    });
   }
 
   /**
@@ -33,9 +40,6 @@ export default class extends Controller {
     if (this.taskModalTarget.classList.contains("show")) {
       return;
     }
-
-    // NOTE: сброс данных формы
-    this.formTarget.reset();
 
     // NOTE: сбор формы и установка URL и режима
     this.formTarget.action = this.createUrlValue;
@@ -137,7 +141,23 @@ export default class extends Controller {
       })
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
-        eventBus.emit("toast:message", "Во время создания задачи произошла ошибка");
+
+        if (error instanceof BadRequestException) {
+          eventBus.emit("toast:message", "Не удалось создать задачу, проверьте вводные данные");
+          return;
+        }
+
+        if (error instanceof UnprocessableEntityException) {
+          for (const error of error.errors) {
+            eventBus.emit("toast:message", error);
+          }
+          return;
+        }
+
+        if (error instanceof InternalServerErrorException) {
+          eventBus.emit("toast:message", "Внутренняя ошибка сервера, попробуйте позже");
+          return;
+        }
       })
       .then(() => {
         this.submitTarget.disabled = false;
@@ -174,7 +194,28 @@ export default class extends Controller {
       })
       .catch((error) => {
         console.error("Ошибка запроса задачи:", error);
-        eventBus.emit("toast:message", "Во время редактирования задачи произошла ошибка");
+
+        if (error instanceof NotFoundException) {
+          eventBus.emit("toast:message", "Задача не найдена на сервере, попробуйте перезагрузить страницу");
+          return;
+        }
+
+        if (error instanceof BadRequestException) {
+          eventBus.emit("toast:message", "Не удалось редактировать задачу, проверьте вводные данные");
+          return;
+        }
+
+        if (error instanceof UnprocessableEntityException) {
+          for (const error of error.errors) {
+            eventBus.emit("toast:message", error);
+          }
+          return;
+        }
+
+        if (error instanceof InternalServerErrorException) {
+          eventBus.emit("toast:message", "Внутренняя ошибка сервера, попробуйте позже");
+          return;
+        }
       })
       .then(() => {
         this.submitTarget.disabled = false;
