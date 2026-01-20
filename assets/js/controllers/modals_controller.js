@@ -46,9 +46,6 @@ export default class extends Controller {
     if (this.taskModalTarget.classList.contains("show")) {
       return;
     }
-
-    // NOTE: сбор формы и установка URL и режима
-    this.formTarget.action = this.createUrlValue;
     this.taskFormMode = "create";
 
     if (this.previouslyOpenedForm != 'create' || this.resetCreateForm) {
@@ -93,7 +90,7 @@ export default class extends Controller {
       taskDeadlineInput.value = deadline || "";
     }
 
-    this.updateFormId = id;
+    this.updateFormId = parseInt(id, 10);
     this.taskFormMode = "update";
     this.previouslyOpenedForm = 'update';
 
@@ -198,11 +195,8 @@ export default class extends Controller {
    * Обработка редактирования задачи.
    */
   update() {
-    // NOTE: получение ID задачи
-    const id = parseInt(this.updateFormId, 10);
-
     ajaxClient
-      .update(id, this.formTarget)
+      .update(this.updateFormId, this.formTarget)
       .then((task) => {
         this.taskModal.hide();
 
