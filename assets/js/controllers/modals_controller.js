@@ -51,11 +51,12 @@ export default class extends Controller {
     this.formTarget.action = this.createUrlValue;
     this.taskFormMode = "create";
 
-    if (this.previouslyOpenedForm != 'create') {
+    if (this.previouslyOpenedForm != 'create' || this.resetCreateForm) {
       // NOTE: если предыдущий открытый форма был другой, то сброс формы
       this.formTarget.reset();
     }
     this.previouslyOpenedForm = 'create';
+    this.resetCreateForm = false;
 
     // NOTE: открытие модального окна
     this._openTaskModal();
@@ -74,7 +75,7 @@ export default class extends Controller {
     }
 
     // NOTE: заполнение формы
-    if (this.previouslyOpenedForm != 'update') {
+    if (this.previouslyOpenedForm != 'update' || this.updateFormId !== id) {
       this.formTarget.reset();
     }
     const taskNameInput = this.formTarget.querySelector('[name="task[name]"]');
@@ -162,7 +163,9 @@ export default class extends Controller {
      .create(this.formTarget)
       .then((task) => {
         eventBus.emit("task:created", task);
+
         this.taskModal.hide();
+        this.resetCreateForm = true;
 
         eventBus.emit("toast:message", 'Задача успешна создана');
       })
