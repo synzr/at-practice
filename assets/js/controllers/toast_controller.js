@@ -5,10 +5,17 @@ import { Toast } from "bootstrap";
 export default class extends Controller {
   static targets = ["template"];
 
+  /**
+   * Подключение слушателя событий
+   */
   connect() {
     eventBus.on("toast:message", this.createToast.bind(this));
   }
 
+  /**
+   * Создание и отображение тоста
+   * @param {CustomEvent} event Событие с сообщением в качестве детали
+   */
   createToast(event) {
     const message = event.detail;
 

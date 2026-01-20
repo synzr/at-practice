@@ -13,6 +13,9 @@ export default class extends Controller {
   };
 
   // #region Действия
+  /**
+   * Переключение пометки выполнения задачи.
+   */
   done() {
     ajaxClient
       .toggleDone(this.idValue)
@@ -43,6 +46,9 @@ export default class extends Controller {
       });
   }
 
+  /**
+   * Открытие модального окна редактирования задачи.
+   */
   update() {
     eventBus.emit("modal:update", {
       id: this.idValue,
@@ -52,19 +58,32 @@ export default class extends Controller {
     });
   }
 
+  /**
+   * Удаление (soft-delete) задачи.
+   */
   remove() {
     this._setDeleted(true);
   }
 
+  /**
+   * Открытие модального окна удаления (hard-delete) задачи.
+   */
   delete() {
     eventBus.emit("modal:delete", { id: this.idValue });
   }
 
+  /**
+   * Восстановление удаленной (soft-delete) задачи.
+   */
   restore() {
     this._setDeleted(false);
   }
   // #endregion
 
+  /**
+   * Установка флага удаления задачи
+   * @param {bool} flag Флаг удаления задачи
+   */
   _setDeleted(flag) {
     ajaxClient
       .setDeleted(this.idValue, flag)

@@ -12,6 +12,9 @@ export default class extends Controller {
     );
   }
 
+  /**
+   * Обновление задач под параметры фильтрации
+   */
   update() {
     const query = this._getFilterParams();
 
@@ -26,13 +29,19 @@ export default class extends Controller {
       });
   }
 
+  /**
+   * @returns {Object} Параметры фильтрации
+   */
   _getFilterParams() {
-    // NOTE: получение параметров из формы фильтрации
     return Object.fromEntries(
       new FormData(this.formTarget).entries(),
     );
   }
 
+  /**
+   * Обновление URL с параметрами фильтрации без перезагрузки страницы
+   * @param {Object} query Параметры фильтрации
+   */
   _updateQuery(query) {
     // NOTE: создание URL с параметрами
     const url = new URL(window.location.href);

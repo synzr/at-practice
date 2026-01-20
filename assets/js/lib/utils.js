@@ -1,6 +1,5 @@
 /**
- * Get filter options from session storage
- * @returns {Object} Filter options
+ * @returns {Object} Объект с параметрами фильтрации
  */
 export function getFilterOptions() {
   return JSON.parse(

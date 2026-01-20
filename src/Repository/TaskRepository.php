@@ -17,6 +17,14 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
+    /**
+     * Найти задачи по критериям сортировки и фильтрации.
+     *
+     * @param array<string, mixed> $sort   Параметры сортировки
+     * @param array<string, mixed> $filter Параметры фильтрации
+     *
+     * @return Task[] Задачи
+     */
     public function findByCriteria(array $sort, array $filter): array
     {
         $q = $this->createQueryBuilder('t');
@@ -30,6 +38,15 @@ class TaskRepository extends ServiceEntityRepository
         return $q->getQuery()->getResult();
     }
 
+    // #region Вспомогательные методы
+    /**
+     * Валидация параметров сортировки и фильтрации.
+     *
+     * @param array<string, mixed> $sort   Параметры сортировки
+     * @param array<string, mixed> $filter Параметры фильтрации
+     *
+     * @return array<int, array<string, mixed>> Параметры сортировки и фильтрации
+     */
     private function validateCriteria(array $sort, array $filter): array
     {
         // NOTE: валидация параметров сортировки и фильтрации
@@ -49,6 +66,15 @@ class TaskRepository extends ServiceEntityRepository
         return [$sort, $filter];
     }
 
+    /**
+     * Применение параметров сортировки и фильтрации.
+     *
+     * @param QueryBuilder         $q      QueryBuilder
+     * @param array<string, mixed> $sort   Параметры сортировки
+     * @param array<string, mixed> $filter Параметры фильтрации
+     *
+     * @return QueryBuilder Итоговый QueryBuilder
+     **/
     private function applyCriteria(QueryBuilder $q, array $sort, array $filter): QueryBuilder
     {
         // NOTE: применение параметров сортировки
@@ -95,4 +121,5 @@ class TaskRepository extends ServiceEntityRepository
 
         return $q;
     }
+    // #endregion
 }

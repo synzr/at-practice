@@ -37,7 +37,10 @@ class AjaxExceptionEvent
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Установка JSON-тело в ответ
+     *
+     * @param array<string, mixed> $data       Данные тела ответа
+     * @param int                  $statusCode Код статуса ответа
      */
     public function setJsonResponse(array $data, int $statusCode = 500): void
     {
@@ -45,6 +48,11 @@ class AjaxExceptionEvent
         $this->exceptionEvent->setResponse($response);
     }
 
+    /**
+     * Установка ответа "Не найдено".
+     *
+     * @param string $message Сообщение ответа
+     */
     public function setNotFoundResponse(string $message = 'Не найдено'): void
     {
         $this->setJsonResponse([
@@ -53,6 +61,11 @@ class AjaxExceptionEvent
         ], 404);
     }
 
+    /**
+     * Установка ответа "Неверный запрос".
+     *
+     * @param string $message Сообщение ответа
+     */
     public function setBadRequestResponse(string $message = 'Неверный запрос'): void
     {
         $this->setJsonResponse([
@@ -61,6 +74,11 @@ class AjaxExceptionEvent
         ], 400);
     }
 
+    /**
+     * Установка ответа "Внутренняя ошибка сервера".
+     *
+     * @param string $message Сообщение ответа
+     */
     public function setInternalServerErrorResponse(string $message = 'Внутренняя ошибка сервера'): void
     {
         $this->setJsonResponse([

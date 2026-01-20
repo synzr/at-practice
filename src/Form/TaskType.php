@@ -19,6 +19,7 @@ class TaskType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            // NOTE: название задачи
             ->add('name', TextType::class, [
                 'label' => 'Название',
                 'constraints' => [
@@ -26,6 +27,7 @@ class TaskType extends AbstractType
                     new Assert\Length(null, 3, 70, null, null, null, null, 'Пожалуйста, введите название задачи от 3-х символов', 'Пожалуйста, введите название задачи до 70 символов'),
                 ],
             ])
+            // NOTE: описание задачи
             ->add('description', TextareaType::class, [
                 'required' => false,
                 'label' => 'Описание',
@@ -33,6 +35,7 @@ class TaskType extends AbstractType
                     new Assert\Length(null, null, 140, null, null, null, null, null, 'Пожалуйста, введите описание задачи до 140 символов'),
                 ],
             ])
+            // NOTE: дедлайн задачи
             ->add('deadline', DateType::class, [
                 'label' => 'Дедлайн',
                 'required' => false,

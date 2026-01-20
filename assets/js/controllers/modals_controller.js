@@ -16,8 +16,19 @@ export default class extends Controller {
       submitText: "Сохранить",
     },
   };
-  static targets = ["grid", "form", "title", "submit", "confirmSubmit", "taskModal", "confirmModal"];
+  static targets = [
+    "grid",
+    "form",
+    "title",
+    "submit",
+    "confirmSubmit",
+    "taskModal",
+    "confirmModal"
+  ];
 
+  /**
+   * Подключение контроллера к элементу
+   */
   connect() {
     this.taskModal = new Modal(this.taskModalTarget);
     this.confirmModal = new Modal(this.confirmModalTarget);
@@ -26,6 +37,7 @@ export default class extends Controller {
     eventBus.on("modal:delete", this.openDeleteModal.bind(this));
   }
 
+  // #region Открытие модального окна
   /**
    * Открытие модального окна для создания
    */
@@ -62,27 +74,27 @@ export default class extends Controller {
     }
 
     // NOTE: заполнение формы
-    const form = this.formTarget;
-
     if (this.previouslyOpenedForm != 'update') {
-      form.reset();
+      this.formTarget.reset();
     }
-    const taskNameInput = form.querySelector('[name="task[name]"]');
+    const taskNameInput = this.formTarget.querySelector('[name="task[name]"]');
     if (taskNameInput.value == "") {
       taskNameInput.value = name;
     }
-    const taskDescriptionInput = form.querySelector('[name="task[description]"]');
+    const taskDescriptionInput =
+      this.formTarget.querySelector('[name="task[description]"]');
     if (taskDescriptionInput.value == "") {
       taskDescriptionInput.value = description || "";
     }
-    const taskDeadlineInput = form.querySelector('[name="task[deadline]"]');
+    const taskDeadlineInput =
+      this.formTarget.querySelector('[name="task[deadline]"]');
     if (taskDeadlineInput.value == "") {
       taskDeadlineInput.value = deadline || "";
     }
-    this.previouslyOpenedForm = 'update';
 
     this.updateFormId = id;
     this.taskFormMode = "update";
+    this.previouslyOpenedForm = 'update';
 
     // NOTE: открытие модального окна
     this._openTaskModal();
@@ -119,7 +131,9 @@ export default class extends Controller {
     // NOTE: открытие модального окна
     this.taskModal.show();
   }
+  // #endregion
 
+  // #region Отправка формы создания/редактирования
   /**
    * Отправка формы
    * @param {SubmitEvent} event Событие отправки формы
@@ -236,34 +250,6 @@ export default class extends Controller {
   }
 
   /**
-   * Обработка удаления задачи.
-   */
-  delete() {
-    this.confirmSubmitTarget.disabled = true;
-
-    ajaxClient
-      .delete(this.deleteFormId)
-      .then(() => {
-        // NOTE: отправка события удаления задачи
-        eventBus.emit("task:deleted", {
-          id: this.deleteFormId,
-        });
-
-        // NOTE: закрытие модального окна
-        this.confirmModal.hide();
-
-        eventBus.emit("toast:message", 'Задача успешна бесвозрастно удалена');
-      })
-      .catch((error) => {
-        console.error("Ошибка запроса задачи:", error);
-        eventBus.emit("toast:message", "Во время удаления задачи произошла ошибка");
-      })
-      .then(() => {
-        this.confirmSubmitTarget.disabled = false;
-      });
-  }
-
-  /**
    * Проверка фильтрации по дедлайну.
    * @param {string} current Текущий дедлайн.
    * @param {string} from Начальный дедлайн.
@@ -291,5 +277,34 @@ export default class extends Controller {
     }
 
     return true;
+  }
+  // #endregion
+
+  /**
+   * Обработка удаления задачи.
+   */
+  delete() {
+    this.confirmSubmitTarget.disabled = true;
+
+    ajaxClient
+      .delete(this.deleteFormId)
+      .then(() => {
+        // NOTE: отправка события удаления задачи
+        eventBus.emit("task:deleted", {
+          id: this.deleteFormId,
+        });
+
+        // NOTE: закрытие модального окна
+        this.confirmModal.hide();
+
+        eventBus.emit("toast:message", 'Задача успешна бесвозрастно удалена');
+      })
+      .catch((error) => {
+        console.error("Ошибка запроса задачи:", error);
+        eventBus.emit("toast:message", "Во время удаления задачи произошла ошибка");
+      })
+      .then(() => {
+        this.confirmSubmitTarget.disabled = false;
+      });
   }
 }

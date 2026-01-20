@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Dto\SetDeletedDto;
 use App\Dto\TaskDto;
-use App\Form\TaskType;
 use App\Entity\Task;
+use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use App\Service\TaskService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -98,6 +98,9 @@ final class TaskController extends AbstractController
         return $this->sendPartialTaskResponse($task, 201 /* Created */, false);
     }
 
+    /**
+     * Обновление задачи.
+     */
     #[Route('/{id}', name: 'task_update', methods: ['POST'])]
     public function update(Request $request, int $id): JsonResponse
     {
@@ -153,6 +156,13 @@ final class TaskController extends AbstractController
     }
 
     // #region Вспомогательные методы
+    /**
+     * Отправка ответа с ошибками формы.
+     *
+     * @param FormInterface<TaskDto> $form Форма
+     *
+     * @return JsonResponse Ответ
+     */
     private function sendUnprocessableEntityResponse(FormInterface $form): JsonResponse
     {
         $errors = [];
@@ -167,13 +177,22 @@ final class TaskController extends AbstractController
         ], 422 /* Unprocessable Entity */);
     }
 
+    /**
+     * Отправка частичного ответа c задачой.
+     *
+     * @param Task $task        Задача
+     * @param int  $statusCode  Код статуса ответа
+     * @param bool $includeId   Включать ли ID задачи в ответ?
+     * @param bool $includeDone Включать ли флаг выполнения задачи в ответ?
+     *
+     * @return JsonResponse Ответ
+     */
     private function sendPartialTaskResponse(
         Task $task,
         int $statusCode,
         bool $includeId = true,
-        bool $includeDone = false
-    ): JsonResponse
-    {
+        bool $includeDone = false,
+    ): JsonResponse {
         $data = $this->renderView('task/_task.html.twig', ['task' => $task]);
         if ($includeId) {
             $data = ['id' => $task->getId(), 'html' => $data];

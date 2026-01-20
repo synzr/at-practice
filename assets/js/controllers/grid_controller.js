@@ -3,6 +3,21 @@ import eventBus from "../lib/event_bus";
 import Masonry from "masonry-layout";
 
 export default class extends Controller {
+  /**
+   * Инициализация контроллера
+   */
+  initialize() {
+    // NOTE: инциализируем Masonry-верстку
+    this.grid = new Masonry(this.element, {
+      itemSelector: ".task-item",
+      percentPosition: true,
+      transitionDuration: "0.1s",
+    });
+  }
+
+  /**
+   * Подключение контроллера
+   */
   connect() {
     // NOTE: регистрируем события
     eventBus.on("task:created", this.onTaskCreated.bind(this))
@@ -12,13 +27,6 @@ export default class extends Controller {
     eventBus.on("task:deleted", this.onTaskDeleted.bind(this))
     eventBus.on("task:restored", this.onTaskUpdated.bind(this))
     eventBus.on("grid:updated", this.onGridUpdated.bind(this))
-
-    // NOTE: инциализируем Masonry-верстку
-    this.grid = new Masonry(this.element, {
-      itemSelector: ".task-item",
-      percentPosition: true,
-      transitionDuration: "0.1s",
-    });
   }
 
   // #region События

@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 
-/* Адаптивность */
+/* NOTE: адаптивность */
 @media (max-width: 576px) {
     .task-item { width: 100%; }
 }
