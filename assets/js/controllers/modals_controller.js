@@ -24,12 +24,6 @@ export default class extends Controller {
 
     eventBus.on("modal:update", this.openUpdateModal.bind(this));
     eventBus.on("modal:delete", this.openDeleteModal.bind(this));
-
-    this.taskModalTarget.addEventListener("hidden.bs.modal", () => {
-      if (this.taskFormMode === "update") {
-        this.formTarget.reset();
-      }
-    });
   }
 
   /**
@@ -44,6 +38,12 @@ export default class extends Controller {
     // NOTE: сбор формы и установка URL и режима
     this.formTarget.action = this.createUrlValue;
     this.taskFormMode = "create";
+
+    if (this.previouslyOpenedForm != 'create') {
+      // NOTE: если предыдущий открытый форма был другой, то сброс формы
+      this.formTarget.reset();
+    }
+    this.previouslyOpenedForm = 'create';
 
     // NOTE: открытие модального окна
     this._openTaskModal();
@@ -64,9 +64,22 @@ export default class extends Controller {
     // NOTE: заполнение формы
     const form = this.formTarget;
 
-    form.querySelector('[name="task[name]"]').value = name;
-    form.querySelector('[name="task[description]"]').value = description || "";
-    form.querySelector('[name="task[deadline]"]').value = deadline || "";
+    if (this.previouslyOpenedForm != 'update') {
+      form.reset();
+    }
+    const taskNameInput = form.querySelector('[name="task[name]"]');
+    if (taskNameInput.value == "") {
+      taskNameInput.value = name;
+    }
+    const taskDescriptionInput = form.querySelector('[name="task[description]"]');
+    if (taskDescriptionInput.value == "") {
+      taskDescriptionInput.value = description || "";
+    }
+    const taskDeadlineInput = form.querySelector('[name="task[deadline]"]');
+    if (taskDeadlineInput.value == "") {
+      taskDeadlineInput.value = deadline || "";
+    }
+    this.previouslyOpenedForm = 'update';
 
     this.updateFormId = id;
     this.taskFormMode = "update";
@@ -81,7 +94,7 @@ export default class extends Controller {
    */
   openDeleteModal(event) {
     // NOTE: проверка, если модальное окно не было открыто до этого
-    if (this.isDeleteModalOpen) {
+    if (this.confirmModalTarget.classList.contains("show")) {
       return;
     }
 
